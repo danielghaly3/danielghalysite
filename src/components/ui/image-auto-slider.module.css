@@ -1,0 +1,98 @@
+.root {
+  --slider-gap: clamp(16px, 2vw, 24px);
+  --slider-card-width: clamp(176px, 24vw, 320px);
+  --slider-duration: 28s;
+}
+
+.viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  transform: translate3d(0, 0, 0);
+  animation: imageAutoSliderScroll var(--slider-duration) linear infinite;
+  will-change: transform;
+}
+
+.group {
+  display: flex;
+  gap: var(--slider-gap);
+  padding-right: var(--slider-gap);
+}
+
+.card {
+  width: var(--slider-card-width);
+  transform: translateZ(0);
+  transition: transform 300ms var(--ease-out-expo), filter 300ms var(--ease-out-expo);
+  will-change: transform;
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: var(--radius-image);
+  background: var(--bone);
+}
+
+.caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 72px 18px 18px;
+  background: linear-gradient(180deg, transparent, rgba(14, 14, 16, 0.82));
+  color: var(--paper);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: scale(1.035);
+    filter: brightness(1.05);
+  }
+}
+
+@media (max-width: 640px) {
+  .root {
+    --slider-card-width: clamp(152px, 58vw, 220px);
+  }
+
+  .viewport {
+    mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+    scrollbar-width: none;
+  }
+
+  .viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .track .group:nth-child(2) {
+    display: none;
+  }
+}
+
+@keyframes imageAutoSliderScroll {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
