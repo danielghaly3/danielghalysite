@@ -7,6 +7,7 @@ import { Pill } from "@/components/primitives/Pill";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { fallbackAboutContent, fallbackSiteSettings } from "@/content/cms-fallbacks";
 import { blurDataUrl } from "@/content/work";
+import { sectionString } from "@/lib/cms/section-content";
 import type { AboutContent, PageSection, SiteSettings } from "@/types/cms";
 
 type HeroProps = {
@@ -27,6 +28,7 @@ export function Hero({ about = fallbackAboutContent, section, settings = fallbac
       ? `${about.subheadline}. ${settings.tagline}`
       : "I cofounded Graphxify, a design studio building bold brands and lean websites that turn attention into outcomes. Based in Mississauga, working everywhere.");
   const image = section?.imageUrl || "/images/daniel-hero.png";
+  const imageAlt = sectionString(section, "imageAlt", "Dark directional brand image for Daniel Ghaly's portfolio");
   const ctaLabel = section?.ctaLabel || "See the work";
   const ctaHref = section?.ctaHref || "#work";
 
@@ -46,7 +48,7 @@ export function Hero({ about = fallbackAboutContent, section, settings = fallbac
       >
         <Image
           src={image}
-          alt="Dark directional brand image for Daniel Ghaly's portfolio"
+          alt={imageAlt}
           fill
           priority
           placeholder="blur"

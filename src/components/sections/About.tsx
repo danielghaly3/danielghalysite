@@ -8,6 +8,7 @@ import {
   fallbackEducationItems,
   fallbackSiteSettings
 } from "@/content/cms-fallbacks";
+import { sectionString } from "@/lib/cms/section-content";
 import type { AboutContent, EducationItem, PageSection, SiteSettings } from "@/types/cms";
 
 type AboutProps = {
@@ -25,7 +26,10 @@ export function About({
 }: AboutProps) {
   const eyebrow = section?.eyebrow || "About";
   const headline = section?.title || about.headline;
-  const educationItems = education.length ? education : fallbackEducationItems;
+  const imageUrl = section?.imageUrl || about.image_url;
+  const imageAlt = sectionString(section, "imageAlt", `Portrait of ${settings.name}`);
+  const educationLabel = sectionString(section, "educationLabel", "Education");
+  const educationItems = education;
   const showEducation = educationItems.length > 0;
 
   return (
@@ -61,7 +65,7 @@ export function About({
             <Reveal delay={0.15}>
               <div className="mt-10 max-w-md rounded-[20px] border border-line bg-white p-6">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
-                  Education
+                  {educationLabel}
                 </p>
                 <ul className="mt-4 divide-y divide-line">
                   {educationItems.map((entry) => (
@@ -86,8 +90,8 @@ export function About({
 
         <div className="lg:col-span-6">
           <AboutImageCard
-            src={about.image_url}
-            alt={`Portrait of ${settings.name}`}
+            src={imageUrl}
+            alt={imageAlt}
             name={settings.name}
             role={about.subheadline}
           />

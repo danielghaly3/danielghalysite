@@ -134,6 +134,18 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "/images/daniel-hero.png",
     orderIndex: 10,
     active: true,
+    content: {
+      imageAlt: "Dark directional brand image for Daniel Ghaly's portfolio",
+      seoTitle: site.title,
+      seoDescription: site.description,
+      ogTitle: site.title,
+      ogDescription: site.description,
+      ogImage: "/opengraph-image",
+      twitterTitle: site.title,
+      twitterDescription: site.description,
+      twitterImage: "/opengraph-image",
+      canonicalUrl: "/"
+    },
     metadata: {}
   },
   {
@@ -149,6 +161,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 20,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -164,6 +177,10 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 30,
     active: true,
+    content: {
+      educationLabel: "Education",
+      imageAlt: "Portrait of Daniel Ghaly"
+    },
     metadata: {}
   },
   {
@@ -179,6 +196,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 40,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -194,6 +212,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 50,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -209,6 +228,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 60,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -224,6 +244,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 70,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -239,6 +260,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 80,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -254,6 +276,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 90,
     active: true,
+    content: {},
     metadata: {}
   },
   {
@@ -269,6 +292,21 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "/images/daniel-hero.png",
     orderIndex: 10,
     active: true,
+    content: {
+      imageAlt: "Editorial brand visual for the Daniel Ghaly projects archive",
+      seoTitle: "Projects",
+      seoDescription:
+        "A collection of brand, web, and digital projects built with a focus on clean design, strong user experience, and polished execution.",
+      ogTitle: "Projects",
+      ogDescription:
+        "A collection of brand, web, and digital projects built with a focus on clean design, strong user experience, and polished execution.",
+      ogImage: "/images/daniel-hero.png",
+      twitterTitle: "Projects",
+      twitterDescription:
+        "A collection of brand, web, and digital projects built with a focus on clean design, strong user experience, and polished execution.",
+      twitterImage: "/images/daniel-hero.png",
+      canonicalUrl: "/projects"
+    },
     metadata: {}
   },
   {
@@ -284,6 +322,40 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 20,
     active: true,
+    content: {},
+    metadata: {}
+  },
+  {
+    id: "projects-detail",
+    page: "projects",
+    sectionKey: "detail",
+    label: "Project Detail Template",
+    eyebrow: "",
+    title: "",
+    body: "",
+    ctaLabel: "",
+    ctaHref: "",
+    imageUrl: "",
+    orderIndex: 30,
+    active: true,
+    content: {
+      backLabel: "All Projects",
+      clientLabel: "Client",
+      roleLabel: "Role",
+      yearLabel: "Year",
+      technologiesLabel: "Technologies",
+      servicesLabel: "Services",
+      linksLabel: "Links",
+      liveLabel: "View live",
+      githubLabel: "Source code",
+      figmaLabel: "Figma file",
+      overviewLabel: "Overview",
+      problemLabel: "The Problem",
+      solutionLabel: "The Solution",
+      resultsLabel: "Results",
+      previousLabel: "Previous",
+      nextLabel: "Next"
+    },
     metadata: {}
   }
 ];
@@ -293,7 +365,8 @@ export const fallbackProcessSteps: ProcessStep[] = processSteps.map((step, index
   title: step.title,
   blurb: step.blurb,
   detail: step.detail,
-  image: step.image
+  image: step.image,
+  imageAlt: `${step.title} process step visual`
 }));
 
 export const fallbackFaqItems: FaqItem[] = faqs.map((faq, index) => ({

@@ -11,7 +11,7 @@ type ToolkitProps = {
 
 export function Toolkit({ items = fallbackToolkitItems, section }: ToolkitProps) {
   return (
-    <section id="skills" aria-labelledby="toolkit-heading" className="section-pad rounded-[28px] bg-ink text-paper">
+    <section id="toolkit" aria-labelledby="toolkit-heading" className="section-pad rounded-[28px] bg-ink text-paper">
       <div className="site-container">
         <Reveal>
           <SectionHeader

@@ -5,9 +5,10 @@ import { ArrowRight } from "lucide-react";
 import { DockNav } from "@/components/layout/dock-nav";
 import { Footer } from "@/components/layout/Footer";
 import { blurDataUrl } from "@/content/work";
-import { getPublishedBlogPosts, getSiteSettings } from "@/lib/cms/public";
+import { getNavLinks, getPublishedBlogPosts, getSiteSettings } from "@/lib/cms/public";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -15,11 +16,15 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const [posts, settings] = await Promise.all([getPublishedBlogPosts(), getSiteSettings()]);
+  const [posts, settings, navLinks] = await Promise.all([
+    getPublishedBlogPosts(),
+    getSiteSettings(),
+    getNavLinks()
+  ]);
 
   return (
     <>
-      <DockNav />
+      <DockNav items={navLinks} />
       <main id="main">
         <section className="relative isolate overflow-hidden rounded-b-[48px] bg-ink pb-24 pt-32 text-paper">
           <div className="site-container">

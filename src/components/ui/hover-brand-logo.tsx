@@ -25,10 +25,27 @@ type RowConfig = {
   durationSeconds: number;
 };
 
-function ToolCard({ item }: { item: HoverBrandLogoItem }) {
+const MIN_ROW_LOOP_ITEMS = 12;
+
+function buildLoopedItems(items: HoverBrandLogoItem[]) {
+  if (!items.length) return [];
+
+  const repeatCount = Math.max(1, Math.ceil(MIN_ROW_LOOP_ITEMS / items.length));
+
+  return Array.from({ length: repeatCount }).flatMap((_, copyIndex) =>
+    items.map((item, itemIndex) => ({
+      item,
+      key: `${copyIndex}-${item.id}-${itemIndex}`,
+      isDuplicate: copyIndex > 0
+    }))
+  );
+}
+
+function ToolCard({ item, isDuplicate = false }: { item: HoverBrandLogoItem; isDuplicate?: boolean }) {
   return (
     <div
       data-tool-logo-card
+      aria-hidden={isDuplicate ? true : undefined}
       className={cn(
         "group relative isolate flex h-[100px] w-[132px] shrink-0 cursor-default select-none flex-col items-center justify-center gap-2.5 overflow-hidden rounded-[16px] px-3 text-center",
         "bg-white/[0.045] text-white/62",
@@ -65,16 +82,28 @@ function ToolCard({ item }: { item: HoverBrandLogoItem }) {
 
 function MarqueeRow({ items, direction, durationSeconds }: RowConfig) {
   if (!items.length) return null;
+  const loopedItems = buildLoopedItems(items);
+
   return (
-    <div className={styles.viewport}>
+    <div className={styles.viewport} data-tool-logo-row-viewport>
       <div
         className={cn(styles.track, direction === "right" && styles.trackReverse)}
+        data-tool-logo-row-track
         style={{ animationDuration: `${durationSeconds}s` }}
       >
         {[0, 1].map((copy) => (
-          <div key={copy} className={styles.row} aria-hidden={copy === 1 ? true : undefined}>
-            {items.map((item) => (
-              <ToolCard key={`${copy}-${item.id}`} item={item} />
+          <div
+            key={copy}
+            className={styles.row}
+            aria-hidden={copy === 1 ? true : undefined}
+            data-tool-logo-row-copy
+          >
+            {loopedItems.map(({ item, key, isDuplicate }) => (
+              <ToolCard
+                key={`${copy}-${key}`}
+                item={item}
+                isDuplicate={copy > 0 || isDuplicate}
+              />
             ))}
           </div>
         ))}

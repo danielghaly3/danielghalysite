@@ -20,7 +20,7 @@ export function Gallery3D({ items = fallbackGalleryItems, section }: Gallery3DPr
   const ctaHref = section?.ctaHref || "#work";
 
   return (
-    <section aria-labelledby="gallery-heading" className="section-pad overflow-hidden bg-paper">
+    <section id="gallery" aria-labelledby="gallery-heading" className="section-pad overflow-hidden bg-paper">
       <div className="site-container">
         <SectionHeader
           id="gallery-heading"

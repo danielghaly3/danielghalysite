@@ -7,16 +7,13 @@ import { DockNav } from "@/components/layout/dock-nav";
 import { Footer } from "@/components/layout/Footer";
 import { StickyGallery } from "@/components/ui/sticky-gallery";
 import { blurDataUrl } from "@/content/projects";
-import { getNavLinks, getProjectBySlug, getPublishedProjects, getSiteSettings } from "@/lib/cms/public";
+import { getNavLinks, getPageSection, getProjectBySlug, getPublishedProjects, getSiteSettings } from "@/lib/cms/public";
+import { sectionString } from "@/lib/cms/section-content";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const projects = await getPublishedProjects();
-  return projects.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -50,10 +47,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [projects, settings, navLinks] = await Promise.all([
+  const [projects, settings, navLinks, detailSection] = await Promise.all([
     getPublishedProjects(),
     getSiteSettings(),
-    getNavLinks()
+    getNavLinks(),
+    getPageSection("projects", "detail")
   ]);
   const index = projects.findIndex((p) => p.slug === slug);
   if (index === -1) notFound();
@@ -62,10 +60,28 @@ export default async function ProjectDetailPage({ params }: Props) {
   const prev = index > 0 ? projects[index - 1] : null;
   const next = index < projects.length - 1 ? projects[index + 1] : null;
   const techList = project.technologies && project.technologies.length ? project.technologies : project.tags;
+  const labels = {
+    back: sectionString(detailSection, "backLabel", "All Projects"),
+    client: sectionString(detailSection, "clientLabel", "Client"),
+    role: sectionString(detailSection, "roleLabel", "Role"),
+    year: sectionString(detailSection, "yearLabel", "Year"),
+    technologies: sectionString(detailSection, "technologiesLabel", "Technologies"),
+    services: sectionString(detailSection, "servicesLabel", "Services"),
+    links: sectionString(detailSection, "linksLabel", "Links"),
+    live: sectionString(detailSection, "liveLabel", "View live"),
+    github: sectionString(detailSection, "githubLabel", "Source code"),
+    figma: sectionString(detailSection, "figmaLabel", "Figma file"),
+    overview: sectionString(detailSection, "overviewLabel", "Overview"),
+    problem: sectionString(detailSection, "problemLabel", "The Problem"),
+    solution: sectionString(detailSection, "solutionLabel", "The Solution"),
+    results: sectionString(detailSection, "resultsLabel", "Results"),
+    previous: sectionString(detailSection, "previousLabel", "Previous"),
+    next: sectionString(detailSection, "nextLabel", "Next")
+  };
   const externalLinks: { label: string; href: string; Icon: typeof ExternalLink }[] = [];
-  if (project.liveUrl) externalLinks.push({ label: "View live", href: project.liveUrl, Icon: ExternalLink });
-  if (project.githubUrl) externalLinks.push({ label: "Source code", href: project.githubUrl, Icon: Github });
-  if (project.figmaUrl) externalLinks.push({ label: "Figma file", href: project.figmaUrl, Icon: Figma });
+  if (project.liveUrl) externalLinks.push({ label: labels.live, href: project.liveUrl, Icon: ExternalLink });
+  if (project.githubUrl) externalLinks.push({ label: labels.github, href: project.githubUrl, Icon: Github });
+  if (project.figmaUrl) externalLinks.push({ label: labels.figma, href: project.figmaUrl, Icon: Figma });
 
   return (
     <>
@@ -94,7 +110,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[13px] font-medium text-white/70 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                All Projects
+                {labels.back}
               </Link>
 
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
@@ -115,25 +131,25 @@ export default async function ProjectDetailPage({ params }: Props) {
                 <div className="space-y-8">
                   {project.client && (
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">Client</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">{labels.client}</p>
                       <p className="mt-1.5 font-display text-base font-semibold">{project.client}</p>
                     </div>
                   )}
                   {project.role && (
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">Role</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">{labels.role}</p>
                       <p className="mt-1.5 font-display text-base font-semibold">{project.role}</p>
                     </div>
                   )}
                   {project.year && (
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">Year</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">{labels.year}</p>
                       <p className="mt-1.5 font-display text-base font-semibold">{project.year}</p>
                     </div>
                   )}
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">
-                      {project.technologies?.length ? "Technologies" : "Services"}
+                      {project.technologies?.length ? labels.technologies : labels.services}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {techList.map((tag) => (
@@ -149,7 +165,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
                   {externalLinks.length ? (
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">Links</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ash">{labels.links}</p>
                       <div className="mt-3 flex flex-col gap-2">
                         {externalLinks.map(({ label, href, Icon }) => (
                           <a
@@ -172,7 +188,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
               <div className="lg:col-span-8 space-y-12">
                 <div>
-                  <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">Overview</h2>
+                  <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">{labels.overview}</h2>
                   <p className="mt-6 text-lg leading-[1.75] text-ash">
                     {project.overview ?? project.description}
                   </p>
@@ -180,21 +196,21 @@ export default async function ProjectDetailPage({ params }: Props) {
 
                 {project.problem ? (
                   <div>
-                    <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">The Problem</h2>
+                    <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">{labels.problem}</h2>
                     <p className="mt-6 whitespace-pre-line text-lg leading-[1.75] text-ash">{project.problem}</p>
                   </div>
                 ) : null}
 
                 {project.solution ? (
                   <div>
-                    <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">The Solution</h2>
+                    <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">{labels.solution}</h2>
                     <p className="mt-6 whitespace-pre-line text-lg leading-[1.75] text-ash">{project.solution}</p>
                   </div>
                 ) : null}
 
                 {project.results ? (
                   <div>
-                    <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">Results</h2>
+                    <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] sm:text-3xl">{labels.results}</h2>
                     <p className="mt-6 whitespace-pre-line text-lg leading-[1.75] text-ash">{project.results}</p>
                   </div>
                 ) : null}
@@ -216,7 +232,7 @@ export default async function ProjectDetailPage({ params }: Props) {
               >
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ash">Previous</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ash">{labels.previous}</p>
                   <p className="mt-0.5 font-display text-base font-semibold text-ink">{prev.name}</p>
                 </div>
               </Link>
@@ -230,7 +246,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 className="group flex items-center gap-3 text-right text-ash transition-colors hover:text-ink"
               >
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ash">Next</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ash">{labels.next}</p>
                   <p className="mt-0.5 font-display text-base font-semibold text-ink">{next.name}</p>
                 </div>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

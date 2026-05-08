@@ -170,35 +170,16 @@ export function DockNav({ items = fallbackNavLinks }: DockNavProps) {
     .map((item) => item.sectionId)
     .filter((id): id is string => Boolean(id));
   const mouseX = useMotionValue(Infinity);
-  const [visible, setVisible] = useState(true);
-  const lastScroll = useRef(0);
   const pathname = usePathname();
   const activeSection = useActiveSection(pathname, sectionIds);
   const activeLabel = useActiveLabel(pathname, activeSection, navItems);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y > 300 && y > lastScroll.current + 4) {
-        setVisible(false);
-      } else {
-        setVisible(true);
-      }
-      lastScroll.current = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
     <ActiveContext.Provider value={activeLabel}>
       <motion.nav
         aria-label="Main navigation"
         initial={{ y: 0, opacity: 1 }}
-        animate={{
-          y: visible ? 0 : -80,
-          opacity: visible ? 1 : 0,
-        }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}

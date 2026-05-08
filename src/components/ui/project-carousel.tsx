@@ -30,24 +30,35 @@ export const ProjectCarousel = React.forwardRef<
     Math.floor(images.length / 2)
   );
 
+  React.useEffect(() => {
+    if (currentIndex >= images.length) {
+      setCurrentIndex(Math.max(0, images.length - 1));
+    }
+  }, [currentIndex, images.length]);
+
   const handleNext = React.useCallback(() => {
+    if (!images.length) return;
     setCurrentIndex((prev) => (prev + 1) % images.length);
   }, [images.length]);
 
   const handlePrev = () => {
+    if (!images.length) return;
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   React.useEffect(() => {
+    if (!images.length) return;
     const timer = setInterval(handleNext, 4000);
     return () => clearInterval(timer);
-  }, [handleNext]);
+  }, [handleNext, images.length]);
+
+  if (!images.length) return null;
 
   return (
     <div
       ref={ref}
       className={cn(
-        "relative w-full flex items-center justify-center",
+        "relative flex w-full items-center justify-center overflow-hidden",
         className
       )}
       {...props}

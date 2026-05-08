@@ -38,7 +38,7 @@ export function Process({ items = fallbackProcessSteps, section }: ProcessProps)
   };
 
   return (
-    <section aria-labelledby="process-heading" className="section-pad bg-paper">
+    <section id="process" aria-labelledby="process-heading" className="section-pad bg-paper">
       <div className="site-container">
         <Reveal>
           <SectionHeader
@@ -145,7 +145,7 @@ export function Process({ items = fallbackProcessSteps, section }: ProcessProps)
                       <span className="relative block aspect-video overflow-hidden rounded-image bg-ink/10">
                         <Image
                           src={step.image}
-                          alt=""
+                          alt={step.imageAlt}
                           fill
                           placeholder="blur"
                           blurDataURL={blurDataUrl}

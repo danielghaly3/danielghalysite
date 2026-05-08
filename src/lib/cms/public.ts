@@ -108,7 +108,8 @@ function safeImage(src: string | null | undefined, fallback: string) {
 
 function projectFromRecord(row: ProjectRecord): Project {
   const image = safeImage(row.thumbnail_url ?? row.cover_image_url, "/images/daniel-hero.png");
-  const sourceGalleryImages = row.gallery_images?.length ? row.gallery_images : [image];
+  const projectGalleryImages = row.gallery_images?.map((src) => src.trim()).filter(Boolean) ?? [];
+  const sourceGalleryImages = projectGalleryImages.length ? projectGalleryImages : [image];
   const galleryImages = Array.from({ length: Math.max(9, sourceGalleryImages.length) }, (_, index) => {
     return sourceGalleryImages[index % sourceGalleryImages.length] ?? image;
   });
@@ -120,7 +121,7 @@ function projectFromRecord(row: ProjectRecord): Project {
     description: row.short_description,
     tags: row.technologies?.length ? row.technologies : row.category ? [row.category] : [],
     image,
-    alt: `${row.title} project image`,
+    alt: row.image_alt ?? `${row.title} project image`,
     year: row.year ?? undefined,
     client: row.client_name ?? undefined,
     role: row.role ?? undefined,
@@ -156,7 +157,7 @@ function featuredProjectFromProject(project: Project) {
 
 function blogFromRecord(row: BlogPostRecord): BlogPost {
   const excerpt = row.excerpt ?? "";
-  const coverImageUrl = row.cover_image_url ?? "/images/daniel-hero.png";
+  const coverImageUrl = safeImage(row.cover_image_url, "/images/daniel-hero.png");
 
   return {
     id: row.id,
@@ -171,7 +172,7 @@ function blogFromRecord(row: BlogPostRecord): BlogPost {
     readingTime: row.reading_time ?? estimateReadingTime(row.content ?? excerpt),
     seoTitle: row.seo_title ?? row.title,
     seoDescription: row.seo_description ?? excerpt,
-    ogImageUrl: row.og_image_url ?? coverImageUrl,
+    ogImageUrl: safeImage(row.og_image_url, coverImageUrl),
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -186,11 +187,11 @@ function serviceFromRecord(row: ServiceRecord): ServiceCarouselItem {
   return {
     id: row.slug,
     title: row.title,
-    subtitle: row.starting_price ? `Starting at ${row.starting_price}` : "Portfolio service",
+    subtitle: row.subtitle ?? (row.starting_price ? `Starting at ${row.starting_price}` : "Portfolio service"),
     description: row.description,
     tags: row.features ?? [],
     image: row.icon?.startsWith("/") || row.icon?.startsWith("http") ? row.icon : "/images/flyup-line.png",
-    alt: `${row.title} service visual`
+    alt: row.image_alt ?? `${row.title} service visual`
   };
 }
 
@@ -199,7 +200,8 @@ function skillFromRecord(row: SkillRecord): HoverBrandLogoItem {
     id: row.id,
     name: row.name,
     category: row.category ?? "Skill",
-    icon: row.icon || "/icons/tools/ui-design.svg"
+    icon: row.icon || "/icons/tools/ui-design.svg",
+    wide: row.wide || undefined
   };
 }
 
@@ -217,6 +219,7 @@ function pageSectionFromRecord(row: PageSectionRecord): PageSection {
     imageUrl: row.image_url ?? "",
     orderIndex: row.order_index,
     active: row.active,
+    content: row.content ?? {},
     metadata: row.metadata ?? {}
   };
 }
@@ -227,7 +230,8 @@ function processStepFromRecord(row: ProcessStepRecord): ProcessStep {
     title: row.title,
     blurb: row.blurb ?? "",
     detail: row.detail ?? "",
-    image: row.image_url ?? "/images/daniel-hero.png"
+    image: safeImage(row.image_url, "/images/daniel-hero.png"),
+    imageAlt: row.image_alt ?? `${row.title} process step visual`
   };
 }
 
@@ -243,7 +247,7 @@ function logoMarqueeItemFromRecord(row: LogoMarqueeItemRecord): LogoMarqueeItem 
   return {
     id: row.id,
     name: row.name,
-    image: row.image_url,
+    image: safeImage(row.image_url, "/icons/tools/ui-design.svg"),
     alt: row.alt ?? row.name,
     height: row.height ?? 42,
     href: row.link_url ?? ""
@@ -293,7 +297,7 @@ function galleryItemFromRecord(row: GalleryItemRecord): GalleryItem {
   return {
     id: row.id,
     caption: row.caption ?? "",
-    image: row.image_url,
+    image: safeImage(row.image_url, "/images/daniel-hero.png"),
     alt: row.alt ?? row.caption ?? "Portfolio gallery image"
   };
 }
@@ -303,7 +307,7 @@ function aboutFromRecord(row: AboutContentRecord): AboutContent {
     headline: row.headline ?? fallbackAboutContent.headline,
     subheadline: row.subheadline ?? fallbackAboutContent.subheadline,
     bio: (row.bio ?? "").split(/\n{2,}/).map((entry) => entry.trim()).filter(Boolean),
-    image_url: row.image_url ?? fallbackAboutContent.image_url,
+    image_url: safeImage(row.image_url, fallbackAboutContent.image_url),
     resume_url: row.resume_url ?? "",
     location: row.location ?? fallbackAboutContent.location,
     email: row.email ?? fallbackAboutContent.email,
@@ -347,7 +351,7 @@ export async function getPublishedProjects(): Promise<Project[]> {
       .order("order_index", { ascending: true })
       .order("created_at", { ascending: false });
 
-    if (error || !data?.length) return allProjects;
+    if (error || !data) return allProjects;
     return (data as ProjectRecord[]).map(projectFromRecord);
   });
 }
@@ -362,7 +366,7 @@ export async function getFeaturedProjects() {
       .order("order_index", { ascending: true })
       .limit(3);
 
-    if (error || !data?.length) return fallbackFeaturedProjects;
+    if (error || !data) return fallbackFeaturedProjects;
     return (data as ProjectRecord[]).map(projectFromRecord).map(featuredProjectFromProject);
   });
 }
@@ -391,7 +395,7 @@ export async function getPublishedBlogPosts(): Promise<BlogPost[]> {
       .eq("published", true)
       .order("created_at", { ascending: false });
 
-    if (error || !data?.length) return [];
+    if (error || !data) return [];
     return (data as BlogPostRecord[]).map(blogFromRecord);
   });
 }
@@ -418,7 +422,7 @@ export async function getServices(): Promise<ServiceCarouselItem[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackServiceItems;
+    if (error || !data) return fallbackServiceItems;
     return (data as ServiceRecord[]).map(serviceFromRecord);
   });
 }
@@ -431,7 +435,7 @@ export async function getSkills(): Promise<HoverBrandLogoItem[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackToolkitItems;
+    if (error || !data) return fallbackToolkitItems;
     return (data as SkillRecord[]).map(skillFromRecord);
   });
 }
@@ -449,7 +453,7 @@ export async function getPageSections(page: string): Promise<PageSection[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallback;
+    if (error || !data) return fallback;
     return (data as PageSectionRecord[]).map(pageSectionFromRecord);
   });
 }
@@ -479,7 +483,7 @@ export async function getProcessSteps(): Promise<ProcessStep[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackProcessSteps;
+    if (error || !data) return fallbackProcessSteps;
     return (data as ProcessStepRecord[]).map(processStepFromRecord);
   });
 }
@@ -492,7 +496,7 @@ export async function getFaqItems(): Promise<FaqItem[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackFaqItems;
+    if (error || !data) return fallbackFaqItems;
     return (data as FaqItemRecord[]).map(faqItemFromRecord);
   });
 }
@@ -505,7 +509,7 @@ export async function getLogoMarqueeItems(): Promise<LogoMarqueeItem[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackLogoMarqueeItems;
+    if (error || !data) return fallbackLogoMarqueeItems;
     return (data as LogoMarqueeItemRecord[]).map(logoMarqueeItemFromRecord);
   });
 }
@@ -518,7 +522,7 @@ export async function getEducationItems(): Promise<EducationItem[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackEducationItems;
+    if (error || !data) return fallbackEducationItems;
     return (data as EducationItemRecord[]).map(educationItemFromRecord);
   });
 }
@@ -545,7 +549,7 @@ export async function getGalleryItems(): Promise<GalleryItem[]> {
       .eq("active", true)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) return fallbackGalleryItems;
+    if (error || !data) return fallbackGalleryItems;
     return (data as GalleryItemRecord[]).map(galleryItemFromRecord);
   });
 }

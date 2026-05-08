@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ImageUp, Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
+import { ImageUploadField } from "@/components/dashboard/ImageUploadField";
 import { createClient } from "@/utils/supabase/client";
 import type { CmsFieldConfig, CmsResourceConfig } from "@/lib/cms/admin";
 import { cn } from "@/lib/cn";
@@ -15,7 +15,17 @@ type FormState = Record<string, FormValue>;
 
 const imageFieldNames = new Set(["cover_image_url", "thumbnail_url", "og_image_url", "image_url", "icon"]);
 const galleryFieldNames = new Set(["gallery_images"]);
-const storageBucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "portfolio-media";
+const resourceUploadFolders: Record<string, string> = {
+  projects: "projects",
+  blog_posts: "blog",
+  services: "services",
+  skills: "skills",
+  page_sections: "sections",
+  process_steps: "process",
+  gallery_items: "gallery",
+  logo_marquee_items: "logos",
+  about_content: "about"
+};
 
 function slugify(value: string) {
   return value
@@ -28,7 +38,7 @@ function slugify(value: string) {
 
 function blankValue(field: CmsFieldConfig): FormValue {
   if (field.type === "checkbox") return field.name === "active";
-  if (field.type === "json") return field.name === "process" || field.name === "metadata" ? "{}" : "";
+  if (field.type === "json") return field.name === "process" || field.name === "metadata" || field.name === "content" ? "{}" : "";
   return "";
 }
 
@@ -75,7 +85,7 @@ function parseJsonValue(field: CmsFieldConfig, value: FormValue) {
   const trimmed = value.trim();
 
   if (!trimmed) {
-    return field.name === "process" || field.name === "metadata" ? {} : "";
+    return field.name === "process" || field.name === "metadata" || field.name === "content" ? {} : "";
   }
 
   try {
@@ -117,8 +127,8 @@ function formToPayload(fields: CmsFieldConfig[], form: FormState) {
 
 function inputClasses(error?: boolean) {
   return cn(
-    "mt-2 w-full rounded-[12px] border bg-white/[0.055] px-4 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-accent",
-    error ? "border-red-400/60" : "border-white/10",
+    "mt-2 w-full rounded-xl border bg-white/[0.04] px-4 text-sm text-white outline-none transition-all placeholder:text-white/25 focus:border-[#00A3FF] focus:ring-2 focus:ring-[#00A3FF]/20",
+    error ? "border-red-400/60" : "border-white/[0.08]",
     "disabled:cursor-not-allowed disabled:opacity-60"
   );
 }
@@ -131,48 +141,8 @@ function isGalleryField(field: CmsFieldConfig) {
   return field.type === "list" && galleryFieldNames.has(field.name);
 }
 
-function getPreviewUrls(field: CmsFieldConfig, value: FormValue) {
-  if (typeof value !== "string") return [];
-  if (isGalleryField(field)) return listValue(value);
-  if (isImageField(field) && value.trim()) return [value.trim()];
-  return [];
-}
-
-function sanitizeFileName(fileName: string) {
-  const fallback = "image";
-  const safe = fileName
-    .toLowerCase()
-    .replace(/[^a-z0-9.]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return safe || fallback;
-}
-
-function uniqueUploadPath(resourceId: string, fieldName: string, file: File) {
-  const id = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
-  return `${resourceId}/${fieldName}/${Date.now()}-${id}-${sanitizeFileName(file.name)}`;
-}
-
-function ImagePreviews({ field, value }: { field: CmsFieldConfig; value: FormValue }) {
-  const urls = getPreviewUrls(field, value);
-  if (!urls.length) return null;
-
-  return (
-    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-      {urls.map((url) => (
-        <div key={url} className="overflow-hidden rounded-[14px] border border-white/10 bg-black/20">
-          <Image
-            src={url}
-            alt={`${field.label} preview`}
-            width={640}
-            height={360}
-            unoptimized
-            className="aspect-video w-full object-cover"
-          />
-          <p className="truncate border-t border-white/10 px-3 py-2 text-xs text-white/45">{url}</p>
-        </div>
-      ))}
-    </div>
-  );
+function fieldFolderName(name: string) {
+  return name.replace(/_/g, "-").replace(/-url$/, "");
 }
 
 type CmsResourceFormProps = {
@@ -185,7 +155,6 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
   const supabase = useMemo(() => createClient(), []);
   const [form, setForm] = useState<FormState>(() => rowToForm(config.fields, initialRow));
   const [saving, setSaving] = useState(false);
-  const [uploadingField, setUploadingField] = useState("");
   const [error, setError] = useState("");
   const isEditing = Boolean(initialRow?.id);
 
@@ -207,6 +176,20 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
     });
   }
 
+  function uploadFolderForField(field: CmsFieldConfig) {
+    const base = resourceUploadFolders[config.id] ?? config.id;
+    const sourceKey = config.slugField ?? config.displayField;
+    const sourceValue = form[sourceKey];
+    const recordSegment =
+      typeof sourceValue === "string" && sourceValue.trim()
+        ? slugify(sourceValue)
+        : typeof initialRow?.id === "string"
+          ? initialRow.id
+          : "new";
+
+    return `${base}/${recordSegment || "new"}/${fieldFolderName(field.name)}`;
+  }
+
   async function checkSlugUnique(payload: Record<string, unknown>) {
     if (!config.slugField) return true;
     const slug = payload[config.slugField];
@@ -218,49 +201,6 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
     const { data, error: slugError } = await query;
     if (slugError) throw new Error(slugError.message);
     return !data?.length;
-  }
-
-  async function uploadFiles(field: CmsFieldConfig, files: FileList | null) {
-    if (!files?.length) return;
-    setError("");
-    setUploadingField(field.name);
-
-    try {
-      const uploadedUrls: string[] = [];
-
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith("image/")) {
-          throw new Error("Only image files can be uploaded.");
-        }
-
-        const path = uniqueUploadPath(config.id, field.name, file);
-        const { error: uploadError } = await supabase.storage.from(storageBucket).upload(path, file, {
-          cacheControl: "3600",
-          contentType: file.type,
-          upsert: false
-        });
-
-        if (uploadError) {
-          throw new Error(`${uploadError.message}. Check that the ${storageBucket} bucket and storage policies exist.`);
-        }
-
-        const { data } = supabase.storage.from(storageBucket).getPublicUrl(path);
-        uploadedUrls.push(data.publicUrl);
-      }
-
-      setForm((current) => {
-        if (isGalleryField(field)) {
-          const existing = listValue(current[field.name] ?? "");
-          return { ...current, [field.name]: [...existing, ...uploadedUrls].join("\n") };
-        }
-
-        return { ...current, [field.name]: uploadedUrls[0] ?? "" };
-      });
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "Unable to upload image.");
-    } finally {
-      setUploadingField("");
-    }
   }
 
   async function onSave(event: React.FormEvent<HTMLFormElement>) {
@@ -285,7 +225,7 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
 
       if (result.error) throw new Error(result.error.message);
 
-      router.push(`/dashboard/${config.id}`);
+      router.push(`/dashboard/${config.id}?saved=${isEditing ? "updated" : "created"}`);
       router.refresh();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to save.");
@@ -295,37 +235,55 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
   }
 
   return (
-    <div>
+    <div className="cms-fade-in">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link
             href={`/dashboard/${config.id}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-white/55 transition-colors hover:text-white"
+            className="inline-flex items-center gap-2 text-[13px] font-medium text-white/45 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to {config.label}
           </Link>
-          <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+          <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.16em] cms-gradient-text">
             {isEditing ? "Edit" : "Create"}
           </p>
-          <h1 className="mt-3 font-display text-[clamp(36px,5vw,58px)] font-semibold leading-none tracking-[-0.03em]">
+          <h1 className="mt-3 font-display text-[clamp(28px,5vw,44px)] font-semibold leading-[1.1] tracking-[-0.025em]">
             {isEditing ? `Edit ${config.singular}` : `New ${config.singular}`}
           </h1>
-          <p className="mt-4 max-w-2xl text-white/58">{config.description}</p>
+          <p className="mt-3 max-w-2xl text-[13px] text-white/45">{config.description}</p>
         </div>
       </div>
 
       {error && (
-        <div className="mt-6 rounded-[14px] border border-red-400/25 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+        <div role="alert" className="mt-6 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-[13px] text-red-200 cms-fade-in">
           {error}
         </div>
       )}
 
-      <form onSubmit={onSave} className="mt-8 rounded-[20px] border border-white/10 bg-white/[0.045] p-5 shadow-pop sm:p-7">
+      <form onSubmit={onSave} className="mt-8 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 shadow-pop sm:p-7">
         <div className="grid gap-6 lg:grid-cols-2">
           {config.fields.map((field) => {
             const value = form[field.name] ?? blankValue(field);
             const canUpload = isImageField(field) || isGalleryField(field);
+
+            if (canUpload) {
+              return (
+                <ImageUploadField
+                  key={field.name}
+                  label={field.label}
+                  value={typeof value === "string" ? value : ""}
+                  onChange={(nextValue) => updateField(field, nextValue)}
+                  folder={uploadFolderForField(field)}
+                  mode={isGalleryField(field) ? "list" : "single"}
+                  required={field.required}
+                  helperText={field.help}
+                  placeholder={field.placeholder}
+                  rows={field.rows ?? 4}
+                  className={isGalleryField(field) ? "lg:col-span-2" : undefined}
+                />
+              );
+            }
 
             if (field.type === "checkbox") {
               return (
@@ -347,26 +305,10 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
             if (field.type === "textarea" || field.type === "list" || field.type === "json") {
               return (
                 <div key={field.name} className={field.rows && field.rows >= 8 ? "lg:col-span-2" : undefined}>
-                  <div className="flex items-center justify-between gap-3">
-                    <label className="text-sm font-medium text-white/72" htmlFor={field.name}>
-                      {field.label}
-                      {field.required && <span className="text-accent"> *</span>}
-                    </label>
-                    {canUpload && (
-                      <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/10 px-3 text-xs font-semibold text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white">
-                        <ImageUp className="h-3.5 w-3.5" />
-                        {uploadingField === field.name ? "Uploading..." : "Upload"}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple={isGalleryField(field)}
-                          className="sr-only"
-                          disabled={Boolean(uploadingField)}
-                          onChange={(event) => void uploadFiles(field, event.target.files)}
-                        />
-                      </label>
-                    )}
-                  </div>
+                  <label className="text-sm font-medium text-white/72" htmlFor={field.name}>
+                    {field.label}
+                    {field.required && <span className="text-accent"> *</span>}
+                  </label>
                   <textarea
                     id={field.name}
                     required={field.required}
@@ -377,7 +319,6 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
                     placeholder={field.placeholder}
                   />
                   {field.help && <p className="mt-1.5 text-xs leading-relaxed text-white/38">{field.help}</p>}
-                  <ImagePreviews field={field} value={value} />
                 </div>
               );
             }
@@ -408,25 +349,10 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
 
             return (
               <div key={field.name}>
-                <div className="flex items-center justify-between gap-3">
-                  <label className="text-sm font-medium text-white/72" htmlFor={field.name}>
-                    {field.label}
-                    {field.required && <span className="text-accent"> *</span>}
-                  </label>
-                  {canUpload && (
-                    <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/10 px-3 text-xs font-semibold text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white">
-                      <ImageUp className="h-3.5 w-3.5" />
-                      {uploadingField === field.name ? "Uploading..." : "Upload"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="sr-only"
-                        disabled={Boolean(uploadingField)}
-                        onChange={(event) => void uploadFiles(field, event.target.files)}
-                      />
-                    </label>
-                  )}
-                </div>
+                <label className="text-sm font-medium text-white/72" htmlFor={field.name}>
+                  {field.label}
+                  {field.required && <span className="text-accent"> *</span>}
+                </label>
                 <input
                   id={field.name}
                   type={field.type === "date" ? "date" : field.type === "number" ? "number" : "text"}
@@ -437,23 +363,22 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
                   placeholder={field.placeholder}
                 />
                 {field.help && <p className="mt-1.5 text-xs leading-relaxed text-white/38">{field.help}</p>}
-                <ImagePreviews field={field} value={value} />
               </div>
             );
           })}
         </div>
 
-        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="mt-8 flex flex-col-reverse gap-3 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
           <Link
             href={`/dashboard/${config.id}`}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-white/10 px-5 text-sm font-semibold text-white/72 transition-colors hover:bg-white/[0.06] hover:text-white"
+            className="cms-btn-secondary h-11 text-[13px]"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-[#0747A6] disabled:cursor-not-allowed disabled:opacity-60"
+            className="cms-btn-primary h-11 text-[13px]"
           >
             <Save className="h-4 w-4" />
             {saving ? "Saving..." : "Save"}

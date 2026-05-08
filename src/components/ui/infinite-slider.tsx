@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, useEffect, useState } from "react";
+import { Children, CSSProperties, useEffect, useMemo, useState } from "react";
 import { animate, motion, useMotionValue } from "motion/react";
 import useMeasure from "react-use-measure";
 import { cn } from "@/lib/cn";
@@ -13,7 +13,11 @@ type InfiniteSliderProps = {
   direction?: "horizontal" | "vertical";
   reverse?: boolean;
   className?: string;
+  minCopies?: number;
 };
+
+const MIN_SLIDER_COPIES = 2;
+const MAX_SLIDER_COPIES = 24;
 
 export function InfiniteSlider({
   children,
@@ -23,21 +27,39 @@ export function InfiniteSlider({
   direction = "horizontal",
   reverse = false,
   className,
+  minCopies = MIN_SLIDER_COPIES,
 }: InfiniteSliderProps) {
   const [currentSpeed, setCurrentSpeed] = useState(speed);
-  const [ref, { width, height }] = useMeasure();
+  const [viewportRef, { width: viewportWidth, height: viewportHeight }] = useMeasure();
+  const [cycleRef, { width: cycleWidth, height: cycleHeight }] = useMeasure();
   const translation = useMotionValue(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [key, setKey] = useState(0);
+  const childrenArray = useMemo(() => Children.toArray(children), [children]);
+  const copyCount = useMemo(() => {
+    const viewportSize = direction === "horizontal" ? viewportWidth : viewportHeight;
+    const cycleSize = direction === "horizontal" ? cycleWidth : cycleHeight;
+    const loopDistance = cycleSize + gap;
+    const requestedCopies = Math.max(minCopies, MIN_SLIDER_COPIES);
+
+    if (viewportSize <= 0 || loopDistance <= 0) {
+      return Math.min(requestedCopies, MAX_SLIDER_COPIES);
+    }
+
+    return Math.min(
+      Math.max(requestedCopies, Math.ceil(viewportSize / loopDistance) + 2),
+      MAX_SLIDER_COPIES
+    );
+  }, [cycleHeight, cycleWidth, direction, gap, minCopies, viewportHeight, viewportWidth]);
 
   useEffect(() => {
     let controls;
-    const size = direction === "horizontal" ? width : height;
+    const size = direction === "horizontal" ? cycleWidth : cycleHeight;
     if (size === 0) return;
 
-    const contentSize = size + gap;
-    const from = reverse ? -contentSize / 2 : 0;
-    const to = reverse ? 0 : -contentSize / 2;
+    const loopDistance = size + gap;
+    const from = reverse ? -loopDistance : 0;
+    const to = reverse ? 0 : -loopDistance;
 
     const distanceToTravel = Math.abs(to - from);
     const duration = distanceToTravel / currentSpeed;
@@ -71,8 +93,8 @@ export function InfiniteSlider({
     key,
     translation,
     currentSpeed,
-    width,
-    height,
+    cycleWidth,
+    cycleHeight,
     gap,
     isTransitioning,
     direction,
@@ -93,9 +115,10 @@ export function InfiniteSlider({
     : {};
 
   return (
-    <div className={cn("overflow-hidden", className)}>
+    <div ref={viewportRef} className={cn("overflow-hidden", className)} data-infinite-slider-viewport>
       <motion.div
         className="flex w-max"
+        data-infinite-slider-track
         style={{
           ...(direction === "horizontal"
             ? { x: translation }
@@ -103,11 +126,23 @@ export function InfiniteSlider({
           gap: `${gap}px`,
           flexDirection: direction === "horizontal" ? "row" : "column",
         }}
-        ref={ref}
         {...hoverProps}
       >
-        {children}
-        {children}
+        {Array.from({ length: copyCount }).map((_, copyIndex) => (
+          <div
+            key={`slider-copy-${copyIndex}`}
+            ref={copyIndex === 0 ? cycleRef : undefined}
+            aria-hidden={copyIndex > 0 ? true : undefined}
+            className="flex shrink-0"
+            data-infinite-slider-copy
+            style={{
+              gap: `${gap}px`,
+              flexDirection: direction === "horizontal" ? "row" : "column",
+            }}
+          >
+            {childrenArray}
+          </div>
+        ))}
       </motion.div>
     </div>
   );

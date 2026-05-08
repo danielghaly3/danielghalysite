@@ -6,6 +6,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { Pill } from "@/components/primitives/Pill";
 import { Eyebrow } from "@/components/primitives/Eyebrow";
 import { blurDataUrl } from "@/content/work";
+import { sectionString } from "@/lib/cms/section-content";
 import type { PageSection } from "@/types/cms";
 
 type ProjectsHeroProps = {
@@ -19,6 +20,7 @@ export function ProjectsHero({ section }: ProjectsHeroProps) {
   const imageY = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [0, 0] : [0, -40]);
   const title = section?.title || "Projects";
   const image = section?.imageUrl || "/images/daniel-hero.png";
+  const imageAlt = sectionString(section, "imageAlt", "Editorial brand visual for the Daniel Ghaly projects archive");
 
   return (
     <section
@@ -36,7 +38,7 @@ export function ProjectsHero({ section }: ProjectsHeroProps) {
       >
         <Image
           src={image}
-          alt="Editorial brand visual for the Daniel Ghaly projects archive"
+          alt={imageAlt}
           fill
           priority
           placeholder="blur"

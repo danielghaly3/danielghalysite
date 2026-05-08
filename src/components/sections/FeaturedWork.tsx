@@ -58,8 +58,13 @@ type FeaturedWorkProps = {
 };
 
 export function FeaturedWork({ projects = fallbackFeaturedProjects, section }: FeaturedWorkProps) {
-  const visibleProjects = projects.length >= 3 ? projects.slice(0, 3) : fallbackFeaturedProjects;
+  const visibleProjects = [
+    ...projects,
+    ...fallbackFeaturedProjects.filter((fallback) => !projects.some((project) => project.slug === fallback.slug))
+  ].slice(0, 3);
   const ctaLabel = section?.ctaLabel || "View case study";
+
+  if (!visibleProjects.length) return null;
 
   return (
     <section id="work" aria-labelledby="work-heading" className="section-pad bg-bone">
@@ -94,14 +99,18 @@ export function FeaturedWork({ projects = fallbackFeaturedProjects, section }: F
 
           <Reveal y={40}>
             <article>
-              <ProjectImage
-                image={visibleProjects[2].image}
-                alt={visibleProjects[2].alt}
-                href={`/projects/${visibleProjects[2].slug}`}
-              />
-              <div className="mt-8">
-                <ProjectContent ctaLabel={ctaLabel} project={visibleProjects[2]} />
-              </div>
+              {visibleProjects[2] ? (
+                <>
+                  <ProjectImage
+                    image={visibleProjects[2].image}
+                    alt={visibleProjects[2].alt}
+                    href={`/projects/${visibleProjects[2].slug}`}
+                  />
+                  <div className="mt-8">
+                    <ProjectContent ctaLabel={ctaLabel} project={visibleProjects[2]} />
+                  </div>
+                </>
+              ) : null}
             </article>
           </Reveal>
         </div>

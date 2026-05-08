@@ -7,16 +7,12 @@ import { MarkdownRenderer } from "@/components/cms/MarkdownRenderer";
 import { DockNav } from "@/components/layout/dock-nav";
 import { Footer } from "@/components/layout/Footer";
 import { blurDataUrl } from "@/content/work";
-import { getBlogPostBySlug, getPublishedBlogPosts, getSiteSettings } from "@/lib/cms/public";
+import { getBlogPostBySlug, getNavLinks, getSiteSettings } from "@/lib/cms/public";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const posts = await getPublishedBlogPosts();
-  return posts.map((post) => ({ slug: post.slug }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -46,13 +42,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const [post, settings] = await Promise.all([getBlogPostBySlug(slug), getSiteSettings()]);
+  const [post, settings, navLinks] = await Promise.all([
+    getBlogPostBySlug(slug),
+    getSiteSettings(),
+    getNavLinks()
+  ]);
 
   if (!post) notFound();
 
   return (
     <>
-      <DockNav />
+      <DockNav items={navLinks} />
       <main id="main">
         <article>
           <section className="relative isolate min-h-[82svh] overflow-hidden rounded-b-[48px] bg-ink text-paper">

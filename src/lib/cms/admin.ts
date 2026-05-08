@@ -18,6 +18,8 @@ export type CmsResourceConfig = {
   singular: string;
   description: string;
   displayField: string;
+  subtitleField?: string;
+  thumbnailField?: string;
   slugField?: string;
   slugSourceField?: string;
   orderField?: string;
@@ -39,6 +41,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "project",
     description: "Case studies, project metadata, galleries, and publication state.",
     displayField: "title",
+    subtitleField: "category",
+    thumbnailField: "thumbnail_url",
     slugField: "slug",
     slugSourceField: "title",
     orderField: "order_index",
@@ -67,6 +71,7 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "featured", label: "Featured", type: "checkbox" },
       { name: "cover_image_url", label: "Cover image URL", type: "text" },
       { name: "thumbnail_url", label: "Thumbnail URL", type: "text" },
+      { name: "image_alt", label: "Project image alt text", type: "text" },
       { name: "gallery_images", label: "Gallery image URLs", type: "list", help: "One URL per line." },
       { name: "live_url", label: "Live URL", type: "text" },
       { name: "github_url", label: "GitHub URL", type: "text" },
@@ -93,6 +98,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "blog post",
     description: "Markdown posts, tags, publish state, and SEO metadata.",
     displayField: "title",
+    subtitleField: "excerpt",
+    thumbnailField: "cover_image_url",
     slugField: "slug",
     slugSourceField: "title",
     statusField: "published",
@@ -117,6 +124,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "service",
     description: "Public services shown in the homepage carousel.",
     displayField: "title",
+    subtitleField: "description",
+    thumbnailField: "icon",
     slugField: "slug",
     slugSourceField: "title",
     orderField: "order_index",
@@ -124,8 +133,10 @@ export const cmsResources: CmsResourceConfig[] = [
     fields: [
       { name: "title", label: "Title", type: "text", required: true },
       { name: "slug", label: "Slug", type: "text", required: true },
+      { name: "subtitle", label: "Subtitle", type: "textarea", rows: 3 },
       { name: "description", label: "Description", type: "textarea", required: true, rows: 5 },
       { name: "icon", label: "Image or icon URL", type: "text" },
+      { name: "image_alt", label: "Image alt text", type: "text" },
       { name: "features", label: "Features", type: "list" },
       { name: "starting_price", label: "Starting price", type: "text" },
       { name: "order_index", label: "Order index", type: "number" },
@@ -139,6 +150,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "skill",
     description: "Tool logos and skill categories shown in the marquee.",
     displayField: "name",
+    subtitleField: "category",
+    thumbnailField: "icon",
     orderField: "order_index",
     statusField: "active",
     fields: [
@@ -146,6 +159,7 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "category", label: "Category", type: "text" },
       { name: "icon", label: "Icon URL", type: "text" },
       { name: "level", label: "Level", type: "number" },
+      { name: "wide", label: "Use wide logo layout", type: "checkbox" },
       { name: "order_index", label: "Order index", type: "number" },
       { name: "active", label: "Active", type: "checkbox" }
     ]
@@ -181,6 +195,13 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "order_index", label: "Order index", type: "number" },
       { name: "active", label: "Active", type: "checkbox" },
       {
+        name: "content",
+        label: "Section content JSON",
+        type: "json",
+        rows: 8,
+        help: "Extra fields used by the section editor, such as image alt text, detail labels, and SEO overrides."
+      },
+      {
         name: "metadata",
         label: "Metadata JSON",
         type: "json",
@@ -196,6 +217,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "process step",
     description: "Homepage process accordion steps, details, images, and ordering.",
     displayField: "title",
+    subtitleField: "blurb",
+    thumbnailField: "image_url",
     orderField: "order_index",
     statusField: "active",
     fields: [
@@ -203,6 +226,7 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "blurb", label: "Short blurb", type: "textarea", rows: 3 },
       { name: "detail", label: "Expanded detail", type: "textarea", rows: 6 },
       { name: "image_url", label: "Image URL", type: "text" },
+      { name: "image_alt", label: "Image alt text", type: "text" },
       { name: "order_index", label: "Order index", type: "number" },
       { name: "active", label: "Active", type: "checkbox" }
     ]
@@ -214,6 +238,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "gallery item",
     description: "Homepage auto-slider images, captions, alt text, and ordering.",
     displayField: "caption",
+    subtitleField: "alt",
+    thumbnailField: "image_url",
     orderField: "order_index",
     statusField: "active",
     fields: [
@@ -243,9 +269,9 @@ export const cmsResources: CmsResourceConfig[] = [
   {
     id: "site_settings",
     table: "site_settings",
-    label: "SEO / Settings",
+    label: "Settings Records",
     singular: "setting",
-    description: "Global contact links, identity text, and default SEO values.",
+    description: "Global identity, navigation, footer, contact, social, and SEO JSON values.",
     displayField: "key",
     fields: [
       { name: "key", label: "Key", type: "text", required: true },
@@ -259,6 +285,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "logo",
     description: "Tool and brand logos shown in the moving marquee under the hero.",
     displayField: "name",
+    subtitleField: "alt",
+    thumbnailField: "image_url",
     orderField: "order_index",
     statusField: "active",
     fields: [
@@ -278,6 +306,7 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "education entry",
     description: "Programs and schools shown in the About section education block.",
     displayField: "program",
+    subtitleField: "school",
     orderField: "order_index",
     statusField: "active",
     fields: [
@@ -296,6 +325,8 @@ export const cmsResources: CmsResourceConfig[] = [
     singular: "profile",
     description: "Headline, biography, profile image, resume, and contact profile fields.",
     displayField: "headline",
+    subtitleField: "subheadline",
+    thumbnailField: "image_url",
     fields: [
       { name: "headline", label: "Headline", type: "text" },
       { name: "subheadline", label: "Subheadline", type: "text" },
