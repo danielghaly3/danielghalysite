@@ -5,10 +5,14 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, ExternalLink, Save } from "lucide-react";
+import { CmsToast } from "@/components/dashboard/CmsToast";
 import { ImageUploadField } from "@/components/dashboard/ImageUploadField";
 import { createClient } from "@/utils/supabase/client";
 import { SectionRepeater } from "@/components/dashboard/SectionRepeater";
+import { logCmsMutationError } from "@/lib/cms/debug";
 import type { SectionEditorField, SectionEditorPage, SectionEditorSchema } from "@/lib/cms/section-editor";
+import { publicPathsForCmsTable, syncCmsUpdate } from "@/lib/cms/client-sync";
+import { sanitizeCmsPayload } from "@/lib/cms/table-schema";
 import type { Json } from "@/types/cms";
 import { cn } from "@/lib/cn";
 
@@ -16,12 +20,12 @@ type SectionRow = Record<string, unknown> & {
   id?: string;
   page?: string;
   section_key?: string;
-  content?: Json;
+  metadata?: Json;
 };
 
 type FieldValue = string | boolean;
 type FormState = Record<string, FieldValue>;
-type ContentState = Record<string, Json | undefined>;
+type MetadataState = Record<string, Json | undefined>;
 
 const imageFieldNames = new Set(["image_url", "ogImage", "twitterImage"]);
 
@@ -30,7 +34,7 @@ function blankValue(field: SectionEditorField): FieldValue {
   return "";
 }
 
-function isContentRecord(value: unknown): value is ContentState {
+function isMetadataRecord(value: unknown): value is MetadataState {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
@@ -39,8 +43,8 @@ function fieldKey(field: SectionEditorField) {
 }
 
 function fieldValue(field: SectionEditorField, row?: SectionRow | null): FieldValue {
-  const content = isContentRecord(row?.content) ? row.content : {};
-  const value = field.source === "content" ? content[field.name] : row?.[field.name];
+  const metadata = isMetadataRecord(row?.metadata) ? row.metadata : {};
+  const value = field.source === "metadata" ? metadata[field.name] : row?.[field.name];
 
   if (field.type === "checkbox") {
     return typeof value === "boolean" ? value : field.name === "active";
@@ -56,10 +60,10 @@ function fieldsToForm(fields: SectionEditorField[], row?: SectionRow | null) {
   }, {});
 }
 
-function formContent(fields: SectionEditorField[], row?: SectionRow | null) {
-  const existing = isContentRecord(row?.content) ? { ...row.content } : {};
+function formMetadata(fields: SectionEditorField[], row?: SectionRow | null) {
+  const existing = isMetadataRecord(row?.metadata) ? { ...row.metadata } : {};
   for (const field of fields) {
-    if (field.source === "content" && existing[field.name] === undefined) {
+    if (field.source === "metadata" && existing[field.name] === undefined) {
       existing[field.name] = "";
     }
   }
@@ -102,7 +106,8 @@ export function SectionEditorForm({
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [form, setForm] = useState<FormState>(() => fieldsToForm(schema.fields, initialRow));
-  const [content, setContent] = useState<ContentState>(() => formContent(schema.fields, initialRow));
+  const [metadata, setMetadata] = useState<MetadataState>(() => formMetadata(schema.fields, initialRow));
+  const [recordId, setRecordId] = useState(initialRow?.id ?? "");
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [message, setMessage] = useState("");
@@ -114,8 +119,8 @@ export function SectionEditorForm({
     setDirty(true);
     setMessage("");
     setForm((current) => ({ ...current, [fieldKey(field)]: value }));
-    if (field.source === "content") {
-      setContent((current) => ({ ...current, [field.name]: value }));
+    if (field.source === "metadata") {
+      setMetadata((current) => ({ ...current, [field.name]: value }));
     }
   }
 
@@ -123,7 +128,7 @@ export function SectionEditorForm({
     const payload: Record<string, unknown> = {
       page,
       section_key: schema.sectionKey,
-      content
+      metadata
     };
 
     for (const field of schema.fields) {
@@ -139,7 +144,7 @@ export function SectionEditorForm({
       }
     }
 
-    return payload;
+    return sanitizeCmsPayload("page_sections", payload);
   }
 
   async function onSave(event: FormEvent<HTMLFormElement>) {
@@ -156,17 +161,26 @@ export function SectionEditorForm({
       }
 
       const payload = payloadFromForm();
-      const result = initialRow?.id
-        ? await supabase.from("page_sections").update(payload).eq("id", initialRow.id)
-        : await supabase.from("page_sections").insert(payload);
+      const isUpdate = Boolean(recordId);
+      const result = isUpdate
+        ? await supabase.from("page_sections").update(payload).eq("id", recordId)
+        : await supabase.from("page_sections").insert(payload).select("id").single();
 
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) {
+        logCmsMutationError({ action: isUpdate ? "update" : "insert", table: "page_sections", payload, error: result.error });
+        throw new Error(result.error.message);
+      }
+
+      if (!isUpdate && result.data && "id" in result.data && typeof result.data.id === "string") {
+        setRecordId(result.data.id);
+      }
 
       setDirty(false);
-      setMessage("Section saved — changes are live on the public site.");
+      setMessage(isUpdate ? "Updated successfully" : "Saved successfully");
+      await syncCmsUpdate(publicPathsForCmsTable("page_sections", payload));
       router.refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unable to save section.");
+      setError(saveError instanceof Error ? `Failed to save: ${saveError.message}` : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -174,6 +188,7 @@ export function SectionEditorForm({
 
   return (
     <div>
+      <CmsToast message={error || message} tone={error ? "error" : "success"} />
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between cms-fade-in">
         <div>

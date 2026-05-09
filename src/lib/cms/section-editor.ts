@@ -1,7 +1,7 @@
 import type { RepeaterFieldConfig } from "@/components/dashboard/RepeaterField";
 
 export type SectionEditorPage = "home" | "projects";
-export type SectionFieldSource = "column" | "content";
+export type SectionFieldSource = "column" | "metadata";
 export type SectionFieldType = "text" | "textarea" | "checkbox";
 
 export type SectionEditorField = {
@@ -52,15 +52,15 @@ const sectionSystemFields: SectionEditorField[] = [
 ];
 
 const seoFields: SectionEditorField[] = [
-  { name: "seoTitle", label: "SEO title", type: "text", source: "content" },
-  { name: "seoDescription", label: "SEO description", type: "textarea", source: "content", rows: 3 },
-  { name: "ogTitle", label: "OG title", type: "text", source: "content" },
-  { name: "ogDescription", label: "OG description", type: "textarea", source: "content", rows: 3 },
-  { name: "ogImage", label: "OG image URL", type: "text", source: "content" },
-  { name: "twitterTitle", label: "Twitter title", type: "text", source: "content" },
-  { name: "twitterDescription", label: "Twitter description", type: "textarea", source: "content", rows: 3 },
-  { name: "twitterImage", label: "Twitter image URL", type: "text", source: "content" },
-  { name: "canonicalUrl", label: "Canonical URL", type: "text", source: "content" }
+  { name: "seoTitle", label: "SEO title", type: "text", source: "metadata" },
+  { name: "seoDescription", label: "SEO description", type: "textarea", source: "metadata", rows: 3 },
+  { name: "ogTitle", label: "OG title", type: "text", source: "metadata" },
+  { name: "ogDescription", label: "OG description", type: "textarea", source: "metadata", rows: 3 },
+  { name: "ogImage", label: "OG image URL", type: "text", source: "metadata" },
+  { name: "twitterTitle", label: "Twitter title", type: "text", source: "metadata" },
+  { name: "twitterDescription", label: "Twitter description", type: "textarea", source: "metadata", rows: 3 },
+  { name: "twitterImage", label: "Twitter image URL", type: "text", source: "metadata" },
+  { name: "canonicalUrl", label: "Canonical URL", type: "text", source: "metadata" }
 ];
 
 const headerFields: SectionEditorField[] = [
@@ -76,7 +76,7 @@ const ctaFields: SectionEditorField[] = [
 
 const imageFields: SectionEditorField[] = [
   { name: "image_url", label: "Image URL", type: "text", source: "column" },
-  { name: "imageAlt", label: "Image alt text", type: "text", source: "content" }
+  { name: "imageAlt", label: "Image alt text", type: "text", source: "metadata" }
 ];
 
 export const homeSectionSchemas: SectionEditorSchema[] = [
@@ -126,8 +126,8 @@ export const homeSectionSchemas: SectionEditorSchema[] = [
       { name: "eyebrow", label: "Eyebrow", type: "text", source: "column" },
       { name: "title", label: "Heading", type: "textarea", source: "column", rows: 3 },
       { name: "image_url", label: "Portrait override URL", type: "text", source: "column" },
-      { name: "imageAlt", label: "Portrait alt text", type: "text", source: "content" },
-      { name: "educationLabel", label: "Education label", type: "text", source: "content" }
+      { name: "imageAlt", label: "Portrait alt text", type: "text", source: "metadata" },
+      { name: "educationLabel", label: "Education label", type: "text", source: "metadata" }
     ],
     relatedResources: [
       {
@@ -217,13 +217,12 @@ export const homeSectionSchemas: SectionEditorSchema[] = [
         { name: "slug", label: "Slug", type: "text", helperText: "Lowercase, hyphenated. Used internally.", required: true },
         { name: "description", label: "Description", type: "textarea", rows: 3, fullWidth: true, required: true },
         { name: "icon", label: "Image URL", type: "image", fullWidth: true },
-        { name: "image_alt", label: "Image alt text", type: "text", fullWidth: true },
         { name: "features", label: "Tags / features", type: "list", rows: 3, helperText: "One tag per line." },
         { name: "starting_price", label: "Starting price (optional)", type: "text" },
         { name: "order_index", label: "Order", type: "number" },
         { name: "active", label: "Show in carousel", type: "checkbox", placeholder: "Visible" }
       ],
-      newItem: { title: "", slug: "", description: "", icon: "", image_alt: "", features: [], starting_price: "", order_index: 0, active: true }
+      newItem: { title: "", slug: "", description: "", icon: "", features: [], starting_price: "", order_index: 0, active: true }
     }
   },
   {
@@ -246,11 +245,10 @@ export const homeSectionSchemas: SectionEditorSchema[] = [
         { name: "blurb", label: "Short blurb", type: "textarea", rows: 2, fullWidth: true },
         { name: "detail", label: "Expanded detail", type: "textarea", rows: 4, fullWidth: true },
         { name: "image_url", label: "Image URL", type: "image", fullWidth: true, required: true },
-        { name: "image_alt", label: "Image alt text", type: "text", fullWidth: true },
         { name: "order_index", label: "Order", type: "number" },
         { name: "active", label: "Show step", type: "checkbox", placeholder: "Visible" }
       ],
-      newItem: { title: "", blurb: "", detail: "", image_url: "", image_alt: "", order_index: 0, active: true }
+      newItem: { title: "", blurb: "", detail: "", image_url: "", order_index: 0, active: true }
     }
   },
   {
@@ -339,22 +337,22 @@ export const projectsSectionSchemas: SectionEditorSchema[] = [
     description: "Shared labels used by every project/case-study detail page.",
     fields: [
       ...sectionSystemFields,
-      { name: "backLabel", label: "Back link label", type: "text", source: "content" },
-      { name: "clientLabel", label: "Client label", type: "text", source: "content" },
-      { name: "roleLabel", label: "Role label", type: "text", source: "content" },
-      { name: "yearLabel", label: "Year label", type: "text", source: "content" },
-      { name: "technologiesLabel", label: "Technologies label", type: "text", source: "content" },
-      { name: "servicesLabel", label: "Services label", type: "text", source: "content" },
-      { name: "linksLabel", label: "Links label", type: "text", source: "content" },
-      { name: "liveLabel", label: "Live link label", type: "text", source: "content" },
-      { name: "githubLabel", label: "GitHub link label", type: "text", source: "content" },
-      { name: "figmaLabel", label: "Figma link label", type: "text", source: "content" },
-      { name: "overviewLabel", label: "Overview heading", type: "text", source: "content" },
-      { name: "problemLabel", label: "Problem heading", type: "text", source: "content" },
-      { name: "solutionLabel", label: "Solution heading", type: "text", source: "content" },
-      { name: "resultsLabel", label: "Results heading", type: "text", source: "content" },
-      { name: "previousLabel", label: "Previous project label", type: "text", source: "content" },
-      { name: "nextLabel", label: "Next project label", type: "text", source: "content" }
+      { name: "backLabel", label: "Back link label", type: "text", source: "metadata" },
+      { name: "clientLabel", label: "Client label", type: "text", source: "metadata" },
+      { name: "roleLabel", label: "Role label", type: "text", source: "metadata" },
+      { name: "yearLabel", label: "Year label", type: "text", source: "metadata" },
+      { name: "technologiesLabel", label: "Technologies label", type: "text", source: "metadata" },
+      { name: "servicesLabel", label: "Services label", type: "text", source: "metadata" },
+      { name: "linksLabel", label: "Links label", type: "text", source: "metadata" },
+      { name: "liveLabel", label: "Live link label", type: "text", source: "metadata" },
+      { name: "githubLabel", label: "GitHub link label", type: "text", source: "metadata" },
+      { name: "figmaLabel", label: "Figma link label", type: "text", source: "metadata" },
+      { name: "overviewLabel", label: "Overview heading", type: "text", source: "metadata" },
+      { name: "problemLabel", label: "Problem heading", type: "text", source: "metadata" },
+      { name: "solutionLabel", label: "Solution heading", type: "text", source: "metadata" },
+      { name: "resultsLabel", label: "Results heading", type: "text", source: "metadata" },
+      { name: "previousLabel", label: "Previous project label", type: "text", source: "metadata" },
+      { name: "nextLabel", label: "Next project label", type: "text", source: "metadata" }
     ],
     relatedResources: [
       {

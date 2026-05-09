@@ -16,7 +16,6 @@ create table if not exists public.page_sections (
   image_url text,
   order_index integer not null default 0,
   active boolean not null default true,
-  content jsonb not null default '{}'::jsonb,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

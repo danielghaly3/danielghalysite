@@ -13,8 +13,12 @@ import {
   Search,
   Trash2
 } from "lucide-react";
+import { CmsToast } from "@/components/dashboard/CmsToast";
 import { createClient } from "@/utils/supabase/client";
+import { logCmsMutationError } from "@/lib/cms/debug";
+import { publicPathsForCmsTable, syncCmsUpdate } from "@/lib/cms/client-sync";
 import type { CmsResourceConfig } from "@/lib/cms/admin";
+import { sanitizeCmsPayload } from "@/lib/cms/table-schema";
 import { cn } from "@/lib/cn";
 
 type Row = Record<string, unknown> & { id?: string; updated_at?: string };
@@ -120,10 +124,10 @@ export function CmsResourceManager({ config, saved }: { config: CmsResourceConfi
 
   useEffect(() => {
     if (saved === "created") {
-      setMessage(`${config.singular[0].toUpperCase()}${config.singular.slice(1)} created.`);
+      setMessage("Saved successfully");
     }
     if (saved === "updated") {
-      setMessage(`${config.singular[0].toUpperCase()}${config.singular.slice(1)} saved.`);
+      setMessage("Updated successfully");
     }
   }, [config.singular, saved]);
 
@@ -137,11 +141,13 @@ export function CmsResourceManager({ config, saved }: { config: CmsResourceConfi
     const { error: deleteError } = await supabase.from(config.table).delete().eq("id", row.id);
 
     if (deleteError) {
-      setError(deleteError.message);
+      logCmsMutationError({ action: "delete", table: config.table, payload: { id: row.id }, error: deleteError });
+      setError(`Failed to update: ${deleteError.message}`);
       return;
     }
 
-    setMessage(`${config.singular[0].toUpperCase()}${config.singular.slice(1)} deleted.`);
+    setMessage("Removed successfully");
+    await syncCmsUpdate(publicPathsForCmsTable(config.table, row));
     await loadRows();
   }
 
@@ -151,15 +157,20 @@ export function CmsResourceManager({ config, saved }: { config: CmsResourceConfi
     if (typeof current !== "boolean") return;
     setBusyId(row.id);
     setError("");
+    setMessage("");
+    const payload = sanitizeCmsPayload(config.table, { [config.statusField]: !current });
     const { error: updateError } = await supabase
       .from(config.table)
-      .update({ [config.statusField]: !current })
+      .update(payload)
       .eq("id", row.id);
     setBusyId(null);
     if (updateError) {
-      setError(updateError.message);
+      logCmsMutationError({ action: "update", table: config.table, payload, error: updateError });
+      setError(`Failed to update: ${updateError.message}`);
       return;
     }
+    setMessage("Updated successfully");
+    await syncCmsUpdate(publicPathsForCmsTable(config.table, row));
     await loadRows();
   }
 
@@ -172,21 +183,28 @@ export function CmsResourceManager({ config, saved }: { config: CmsResourceConfi
     if (!a.id || !b.id) return;
     setBusyId(a.id);
     setError("");
+    setMessage("");
     const aOrder = (a[config.orderField] as number | undefined) ?? index * 10;
     const bOrder = (b[config.orderField] as number | undefined) ?? target * 10;
+    const aPayload = sanitizeCmsPayload(config.table, { [config.orderField]: bOrder });
+    const bPayload = sanitizeCmsPayload(config.table, { [config.orderField]: aOrder });
     const { error: e1 } = await supabase
       .from(config.table)
-      .update({ [config.orderField]: bOrder })
+      .update(aPayload)
       .eq("id", a.id);
     const { error: e2 } = await supabase
       .from(config.table)
-      .update({ [config.orderField]: aOrder })
+      .update(bPayload)
       .eq("id", b.id);
     setBusyId(null);
     if (e1 || e2) {
-      setError(e1?.message || e2?.message || "Reorder failed");
+      if (e1) logCmsMutationError({ action: "update", table: config.table, payload: aPayload, error: e1 });
+      if (e2) logCmsMutationError({ action: "update", table: config.table, payload: bPayload, error: e2 });
+      setError(`Failed to update: ${e1?.message || e2?.message || "Reorder failed"}`);
       return;
     }
+    setMessage("Updated successfully");
+    await syncCmsUpdate(publicPathsForCmsTable(config.table, a));
     await loadRows();
   }
 
@@ -211,6 +229,7 @@ export function CmsResourceManager({ config, saved }: { config: CmsResourceConfi
 
   return (
     <section className="cms-fade-in">
+      <CmsToast message={error || message} tone={error ? "error" : "success"} />
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>

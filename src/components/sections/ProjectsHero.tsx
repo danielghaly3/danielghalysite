@@ -30,7 +30,7 @@ export function ProjectsHero({ section }: ProjectsHeroProps) {
       className="relative isolate min-h-[100svh] overflow-hidden rounded-b-[48px] bg-ink text-paper"
     >
       <motion.div
-        className="absolute inset-y-0 right-0 z-[-2] w-full opacity-55 md:w-[60%] md:opacity-100"
+        className="absolute -inset-y-[15vh] inset-x-0 z-[-2] w-full opacity-55 md:opacity-100"
         style={{ y: imageY }}
         initial={shouldReduceMotion ? { opacity: 1 } : { scale: 1.05 }}
         animate={shouldReduceMotion ? { opacity: 1 } : { scale: 1 }}

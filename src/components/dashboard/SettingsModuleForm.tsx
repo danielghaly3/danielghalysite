@@ -17,9 +17,13 @@ import {
   SearchCheck,
   Trash2
 } from "lucide-react";
+import { CmsToast } from "@/components/dashboard/CmsToast";
 import { ImageUploadField } from "@/components/dashboard/ImageUploadField";
 import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/cn";
+import { logCmsMutationError } from "@/lib/cms/debug";
+import { syncCmsUpdate } from "@/lib/cms/client-sync";
+import { sanitizeCmsPayload } from "@/lib/cms/table-schema";
 import {
   hasSettingValue,
   navIconOptions,
@@ -159,20 +163,24 @@ export function SettingsModuleForm({
 
       const payload = module.fields.map((field) => {
         const value = form[field.key];
-        return {
+        return sanitizeCmsPayload("site_settings", {
           key: field.key,
           value: field.type === "navLinks" ? navItemsToJson(value as NavLinkEditorItem[]) : (value || "")
-        };
+        });
       });
 
       const { error: saveError } = await supabase.from("site_settings").upsert(payload, { onConflict: "key" });
-      if (saveError) throw new Error(saveError.message);
+      if (saveError) {
+        logCmsMutationError({ action: "upsert", table: "site_settings", payload, error: saveError });
+        throw new Error(saveError.message);
+      }
 
       setDirty(false);
-      setMessage(`${module.title} saved. Changes are live on the public site.`);
+      setMessage("Saved successfully");
+      await syncCmsUpdate(["/", "/projects"]);
       router.refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unable to save settings.");
+      setError(saveError instanceof Error ? `Failed to save: ${saveError.message}` : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -180,6 +188,7 @@ export function SettingsModuleForm({
 
   return (
     <div className="cms-fade-in">
+      <CmsToast message={error || message} tone={error ? "error" : "success"} />
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link

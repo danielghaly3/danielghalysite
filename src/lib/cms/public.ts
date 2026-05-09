@@ -219,7 +219,6 @@ function pageSectionFromRecord(row: PageSectionRecord): PageSection {
     imageUrl: row.image_url ?? "",
     orderIndex: row.order_index,
     active: row.active,
-    content: row.content ?? {},
     metadata: row.metadata ?? {}
   };
 }

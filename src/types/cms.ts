@@ -17,7 +17,7 @@ export type ProjectRecord = {
   featured: boolean;
   cover_image_url: string | null;
   thumbnail_url: string | null;
-  image_alt: string | null;
+  image_alt?: string | null;
   gallery_images: string[];
   live_url: string | null;
   github_url: string | null;
@@ -58,10 +58,10 @@ export type ServiceRecord = {
   id: string;
   title: string;
   slug: string;
-  subtitle: string | null;
+  subtitle?: string | null;
   description: string;
   icon: string | null;
-  image_alt: string | null;
+  image_alt?: string | null;
   features: string[];
   starting_price: string | null;
   order_index: number;
@@ -76,7 +76,7 @@ export type SkillRecord = {
   category: string | null;
   icon: string | null;
   level: number | null;
-  wide: boolean | null;
+  wide?: boolean | null;
   order_index: number;
   active: boolean;
   created_at: string;
@@ -96,7 +96,6 @@ export type PageSectionRecord = {
   image_url: string | null;
   order_index: number;
   active: boolean;
-  content: Json;
   metadata: Json;
   created_at: string;
   updated_at: string;
@@ -108,7 +107,7 @@ export type ProcessStepRecord = {
   blurb: string | null;
   detail: string | null;
   image_url: string | null;
-  image_alt: string | null;
+  image_alt?: string | null;
   order_index: number;
   active: boolean;
   created_at: string;
@@ -269,7 +268,6 @@ export type PageSection = {
   imageUrl: string;
   orderIndex: number;
   active: boolean;
-  content: Json;
   metadata: Json;
 };
 

@@ -29,7 +29,7 @@ type PageSectionRow = {
   cta_label: string | null;
   cta_href: string | null;
   image_url: string | null;
-  content: unknown;
+  metadata: unknown;
   active: boolean;
   updated_at: string;
 };
@@ -128,7 +128,7 @@ async function getPageSections(page: PageName) {
   const supabase = createClient(cookieStore);
   const { data } = await supabase
     .from("page_sections")
-    .select("id,page,section_key,label,eyebrow,title,body,cta_label,cta_href,image_url,content,active,updated_at")
+    .select("id,page,section_key,label,eyebrow,title,body,cta_label,cta_href,image_url,metadata,active,updated_at")
     .eq("page", page)
     .order("order_index", { ascending: true });
 
@@ -195,16 +195,16 @@ function getProjectLibrarySummary(projects: ProjectRow[]): ItemSummary {
   };
 }
 
-function contentString(section: PageSectionRow | undefined, key: string) {
-  if (!section?.content || typeof section.content !== "object" || Array.isArray(section.content)) return "";
-  const value = (section.content as Record<string, unknown>)[key];
+function metadataString(section: PageSectionRow | undefined, key: string) {
+  if (!section?.metadata || typeof section.metadata !== "object" || Array.isArray(section.metadata)) return "";
+  const value = (section.metadata as Record<string, unknown>)[key];
   return safeText(value);
 }
 
 function fallbackPreviewForSection(schema: SectionEditorSchema, section?: PageSectionRow): ItemPreview[] {
   if (schema.sectionKey === "detail") {
     return ["overviewLabel", "problemLabel", "solutionLabel"].map((key) => ({
-      title: contentString(section, key) || key.replace("Label", ""),
+      title: metadataString(section, key) || key.replace("Label", ""),
       subtitle: "Template label",
       image: "",
       active: true,
@@ -216,7 +216,7 @@ function fallbackPreviewForSection(schema: SectionEditorSchema, section?: PageSe
   return [
     {
       title: section?.title || "About profile",
-      subtitle: contentString(section, "educationLabel") || "Profile, bio, and education",
+      subtitle: metadataString(section, "educationLabel") || "Profile, bio, and education",
       image: section?.image_url?.trim() || "",
       active: section?.active !== false,
       status: section?.active === false ? "hidden" : "live"

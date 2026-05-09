@@ -42,9 +42,9 @@ const navGroups: NavGroup[] = [
   {
     label: "Pages",
     items: [
-      { label: "Home Page", href: "/dashboard/pages/home", icon: Home },
+      { label: "Home Page", href: "/dashboard/pages/home", icon: Home, matchPrefix: "exact" },
       { label: "About Page", href: "/dashboard/pages/home/about", icon: User },
-      { label: "Projects Page", href: "/dashboard/pages/projects", icon: Briefcase },
+      { label: "Projects Page", href: "/dashboard/pages/projects", icon: Briefcase, matchPrefix: "exact" },
       { label: "Project Template", href: "/dashboard/pages/projects/detail", icon: Layers },
       { label: "Blog Page", href: "/dashboard/pages/blog", icon: BookOpen },
       { label: "Contact / Footer", href: "/dashboard/settings/footer", icon: MessageSquareText }

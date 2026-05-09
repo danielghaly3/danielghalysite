@@ -4,8 +4,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Save } from "lucide-react";
+import { CmsToast } from "@/components/dashboard/CmsToast";
 import { RepeaterField } from "@/components/dashboard/RepeaterField";
 import { createClient } from "@/utils/supabase/client";
+import { logCmsMutationError } from "@/lib/cms/debug";
+import { publicPathsForCmsTable, syncCmsUpdate } from "@/lib/cms/client-sync";
+import { sanitizeCmsPayload } from "@/lib/cms/table-schema";
 import { cn } from "@/lib/cn";
 import type { SectionRepeaterConfig } from "@/lib/cms/section-editor";
 
@@ -42,9 +46,10 @@ export function SectionRepeater({ config, initialItems }: SectionRepeaterProps) 
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [items, setItems] = useState<Item[]>(() => initialItems.map((i) => ({ ...i })));
-  const initialIds = useMemo(
-    () => new Set(initialItems.map((i) => (i.id as string) ?? "").filter(Boolean)),
-    [initialItems]
+  const [baselineItems, setBaselineItems] = useState<Item[]>(() => initialItems.map((i) => ({ ...i })));
+  const baselineIds = useMemo(
+    () => new Set(baselineItems.map((i) => (i.id as string) ?? "").filter(Boolean)),
+    [baselineItems]
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -59,13 +64,13 @@ export function SectionRepeater({ config, initialItems }: SectionRepeaterProps) 
   }, [items]);
 
   const dirty = useMemo(() => {
-    if (items.length !== initialItems.length) return true;
+    if (items.length !== baselineItems.length) return true;
     return items.some((item, idx) => {
-      const initial = initialItems[idx];
+      const initial = baselineItems[idx];
       if (!initial) return true;
       return JSON.stringify(item) !== JSON.stringify(initial);
     });
-  }, [items, initialItems]);
+  }, [items, baselineItems]);
 
   async function onSave() {
     setSaving(true);
@@ -82,7 +87,7 @@ export function SectionRepeater({ config, initialItems }: SectionRepeaterProps) 
       }
 
       const currentIds = new Set(items.map((i) => i.id).filter(Boolean) as string[]);
-      const toDelete = [...initialIds].filter((id) => !currentIds.has(id));
+      const toDelete = [...baselineIds].filter((id) => !currentIds.has(id));
 
       const renumbered = items.map((item, idx) => ({ ...item, order_index: idx * 10 }));
 
@@ -90,30 +95,52 @@ export function SectionRepeater({ config, initialItems }: SectionRepeaterProps) 
         .filter((item) => !item.id)
         .map(({ id: _id, ...rest }) => {
           void _id;
-          return rest;
+          return sanitizeCmsPayload(config.table, rest);
         });
       const toUpdate = renumbered.filter((item) => item.id);
+      let savedItems: Item[] = renumbered;
 
       if (toDelete.length) {
         const { error: deleteError } = await supabase.from(config.table).delete().in("id", toDelete);
-        if (deleteError) throw new Error(deleteError.message);
+        if (deleteError) {
+          logCmsMutationError({ action: "delete", table: config.table, payload: { ids: toDelete }, error: deleteError });
+          throw new Error(deleteError.message);
+        }
       }
 
       if (toInsert.length) {
-        const { error: insertError } = await supabase.from(config.table).insert(toInsert);
-        if (insertError) throw new Error(insertError.message);
+        const { data: insertedRows, error: insertError } = await supabase.from(config.table).insert(toInsert).select("*");
+        if (insertError) {
+          logCmsMutationError({ action: "insert", table: config.table, payload: toInsert, error: insertError });
+          throw new Error(insertError.message);
+        }
+
+        let insertedIndex = 0;
+        savedItems = savedItems.map((item) => {
+          if (item.id) return item;
+          const inserted = (insertedRows?.[insertedIndex] ?? item) as Item;
+          insertedIndex += 1;
+          return inserted;
+        });
       }
 
       for (const item of toUpdate) {
         const { id, ...rest } = item;
-        const { error: updateError } = await supabase.from(config.table).update(rest).eq("id", id as string);
-        if (updateError) throw new Error(updateError.message);
+        const payload = sanitizeCmsPayload(config.table, rest);
+        const { error: updateError } = await supabase.from(config.table).update(payload).eq("id", id as string);
+        if (updateError) {
+          logCmsMutationError({ action: "update", table: config.table, payload, error: updateError });
+          throw new Error(updateError.message);
+        }
       }
 
-      setMessage(`${config.label} saved.`);
+      setItems(savedItems);
+      setBaselineItems(savedItems);
+      setMessage(toDelete.length && !toInsert.length && !toUpdate.length ? "Removed successfully" : "Saved successfully");
+      await syncCmsUpdate(publicPathsForCmsTable(config.table));
       router.refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unable to save items.");
+      setError(saveError instanceof Error ? `Failed to save: ${saveError.message}` : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -127,6 +154,7 @@ export function SectionRepeater({ config, initialItems }: SectionRepeaterProps) 
 
   return (
     <section className="mt-8 rounded-[20px] border border-white/10 bg-white/[0.04] p-5 sm:p-7">
+      <CmsToast message={error || message} tone={error ? "error" : "success"} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">Section items</p>
@@ -170,8 +198,12 @@ export function SectionRepeater({ config, initialItems }: SectionRepeaterProps) 
           label=""
           items={items}
           onChange={(next) => {
+            setError("");
+            if (next.length < items.length) {
+              setMessage("Removed successfully. Save to publish this change.");
+            }
             setItems(next as Item[]);
-            setMessage("");
+            if (next.length >= items.length) setMessage("");
           }}
           fields={config.fields}
           newItem={() => cloneNewItem(config.newItem)}

@@ -36,16 +36,9 @@ export function LogoMarquee({ section, items = fallbackLogoMarqueeItems }: LogoM
       aria-label={section?.label || "Tools and technologies"}
       className="relative mt-16 overflow-hidden bg-paper py-14"
     >
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-5 px-6 sm:flex-row sm:gap-0">
-        {/* label */}
-        <div className="shrink-0 text-center sm:border-r sm:border-line sm:pr-8 sm:text-right">
-          <p className="text-[13px] font-medium tracking-wide text-ash uppercase">
-            {section?.title || "Brands Trusted Me"}
-          </p>
-        </div>
-
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-6 px-6">
         {/* marquee */}
-        <div className="w-full sm:flex-1">
+        <div className="w-full">
           <BlurredInfiniteSlider
             speed={35}
             gap={112}

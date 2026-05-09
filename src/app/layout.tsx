@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import localFont from "next/font/local";
+import { CmsLiveRefresh } from "@/components/cms/CmsLiveRefresh";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { site, socialLinks } from "@/content/site";
 import "./globals.css";
@@ -85,6 +86,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <MotionProvider>{children}</MotionProvider>
+        <CmsLiveRefresh />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}

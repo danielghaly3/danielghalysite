@@ -71,7 +71,6 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "featured", label: "Featured", type: "checkbox" },
       { name: "cover_image_url", label: "Cover image URL", type: "text" },
       { name: "thumbnail_url", label: "Thumbnail URL", type: "text" },
-      { name: "image_alt", label: "Project image alt text", type: "text" },
       { name: "gallery_images", label: "Gallery image URLs", type: "list", help: "One URL per line." },
       { name: "live_url", label: "Live URL", type: "text" },
       { name: "github_url", label: "GitHub URL", type: "text" },
@@ -133,10 +132,8 @@ export const cmsResources: CmsResourceConfig[] = [
     fields: [
       { name: "title", label: "Title", type: "text", required: true },
       { name: "slug", label: "Slug", type: "text", required: true },
-      { name: "subtitle", label: "Subtitle", type: "textarea", rows: 3 },
       { name: "description", label: "Description", type: "textarea", required: true, rows: 5 },
       { name: "icon", label: "Image or icon URL", type: "text" },
-      { name: "image_alt", label: "Image alt text", type: "text" },
       { name: "features", label: "Features", type: "list" },
       { name: "starting_price", label: "Starting price", type: "text" },
       { name: "order_index", label: "Order index", type: "number" },
@@ -159,7 +156,6 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "category", label: "Category", type: "text" },
       { name: "icon", label: "Icon URL", type: "text" },
       { name: "level", label: "Level", type: "number" },
-      { name: "wide", label: "Use wide logo layout", type: "checkbox" },
       { name: "order_index", label: "Order index", type: "number" },
       { name: "active", label: "Active", type: "checkbox" }
     ]
@@ -195,18 +191,11 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "order_index", label: "Order index", type: "number" },
       { name: "active", label: "Active", type: "checkbox" },
       {
-        name: "content",
-        label: "Section content JSON",
+        name: "metadata",
+        label: "Section metadata JSON",
         type: "json",
         rows: 8,
-        help: "Extra fields used by the section editor, such as image alt text, detail labels, and SEO overrides."
-      },
-      {
-        name: "metadata",
-        label: "Metadata JSON",
-        type: "json",
-        rows: 5,
-        help: "Optional advanced section data. Keep this as {} unless a component needs extra settings."
+        help: "Extra section fields such as image alt text, detail labels, and SEO overrides."
       }
     ]
   },
@@ -226,7 +215,6 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "blurb", label: "Short blurb", type: "textarea", rows: 3 },
       { name: "detail", label: "Expanded detail", type: "textarea", rows: 6 },
       { name: "image_url", label: "Image URL", type: "text" },
-      { name: "image_alt", label: "Image alt text", type: "text" },
       { name: "order_index", label: "Order index", type: "number" },
       { name: "active", label: "Active", type: "checkbox" }
     ]

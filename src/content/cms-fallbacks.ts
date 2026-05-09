@@ -134,7 +134,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "/images/daniel-hero.png",
     orderIndex: 10,
     active: true,
-    content: {
+    metadata: {
       imageAlt: "Dark directional brand image for Daniel Ghaly's portfolio",
       seoTitle: site.title,
       seoDescription: site.description,
@@ -145,8 +145,7 @@ export const fallbackPageSections: PageSection[] = [
       twitterDescription: site.description,
       twitterImage: "/opengraph-image",
       canonicalUrl: "/"
-    },
-    metadata: {}
+    }
   },
   {
     id: "home-logo-marquee",
@@ -161,7 +160,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 20,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -177,11 +175,10 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 30,
     active: true,
-    content: {
+    metadata: {
       educationLabel: "Education",
       imageAlt: "Portrait of Daniel Ghaly"
-    },
-    metadata: {}
+    }
   },
   {
     id: "home-featured-work",
@@ -196,7 +193,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 40,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -212,7 +208,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 50,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -228,7 +223,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 60,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -244,7 +238,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 70,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -260,7 +253,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 80,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -276,7 +268,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 90,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -292,7 +283,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "/images/daniel-hero.png",
     orderIndex: 10,
     active: true,
-    content: {
+    metadata: {
       imageAlt: "Editorial brand visual for the Daniel Ghaly projects archive",
       seoTitle: "Projects",
       seoDescription:
@@ -306,8 +297,7 @@ export const fallbackPageSections: PageSection[] = [
         "A collection of brand, web, and digital projects built with a focus on clean design, strong user experience, and polished execution.",
       twitterImage: "/images/daniel-hero.png",
       canonicalUrl: "/projects"
-    },
-    metadata: {}
+    }
   },
   {
     id: "projects-grid",
@@ -322,7 +312,6 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 20,
     active: true,
-    content: {},
     metadata: {}
   },
   {
@@ -338,7 +327,7 @@ export const fallbackPageSections: PageSection[] = [
     imageUrl: "",
     orderIndex: 30,
     active: true,
-    content: {
+    metadata: {
       backLabel: "All Projects",
       clientLabel: "Client",
       roleLabel: "Role",
@@ -355,8 +344,7 @@ export const fallbackPageSections: PageSection[] = [
       resultsLabel: "Results",
       previousLabel: "Previous",
       nextLabel: "Next"
-    },
-    metadata: {}
+    }
   }
 ];
 

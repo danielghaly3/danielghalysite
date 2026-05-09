@@ -3,7 +3,7 @@ import type { Json, PageSection } from "@/types/cms";
 type SectionContent = Record<string, Json | undefined>;
 
 export function getSectionContent(section?: PageSection): SectionContent {
-  const content = section?.content;
+  const content = section?.metadata;
   if (!content || typeof content !== "object" || Array.isArray(content)) return {};
   return content as SectionContent;
 }

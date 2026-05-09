@@ -4,9 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
+import { CmsToast } from "@/components/dashboard/CmsToast";
 import { ImageUploadField } from "@/components/dashboard/ImageUploadField";
 import { createClient } from "@/utils/supabase/client";
+import { logCmsMutationError } from "@/lib/cms/debug";
+import { publicPathsForCmsTable, syncCmsUpdate } from "@/lib/cms/client-sync";
 import type { CmsFieldConfig, CmsResourceConfig } from "@/lib/cms/admin";
+import { sanitizeCmsPayload } from "@/lib/cms/table-schema";
 import { cn } from "@/lib/cn";
 
 type Row = Record<string, unknown> & { id?: string };
@@ -156,6 +160,7 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
   const [form, setForm] = useState<FormState>(() => rowToForm(config.fields, initialRow));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const isEditing = Boolean(initialRow?.id);
 
   function updateField(field: CmsFieldConfig, value: FormValue) {
@@ -207,6 +212,7 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
     event.preventDefault();
     setSaving(true);
     setError("");
+    setMessage("");
 
     try {
       for (const field of config.fields) {
@@ -215,7 +221,7 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
         }
       }
 
-      const payload = formToPayload(config.fields, form);
+      const payload = sanitizeCmsPayload(config.table, formToPayload(config.fields, form));
       const slugIsUnique = await checkSlugUnique(payload);
       if (!slugIsUnique) throw new Error("Slug is already in use. Choose a unique slug.");
 
@@ -223,12 +229,17 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
         ? await supabase.from(config.table).update(payload).eq("id", initialRow.id)
         : await supabase.from(config.table).insert(payload);
 
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) {
+        logCmsMutationError({ action: isEditing ? "update" : "insert", table: config.table, payload, error: result.error });
+        throw new Error(result.error.message);
+      }
 
+      setMessage(isEditing ? "Updated successfully" : "Saved successfully");
+      await syncCmsUpdate(publicPathsForCmsTable(config.table, payload));
       router.push(`/dashboard/${config.id}?saved=${isEditing ? "updated" : "created"}`);
       router.refresh();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unable to save.");
+      setError(saveError instanceof Error ? `Failed to save: ${saveError.message}` : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -236,6 +247,7 @@ export function CmsResourceForm({ config, initialRow = null }: CmsResourceFormPr
 
   return (
     <div className="cms-fade-in">
+      <CmsToast message={error || message} tone={error ? "error" : "success"} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link
