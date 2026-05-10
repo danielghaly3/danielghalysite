@@ -10,15 +10,14 @@ export const site = {
 };
 
 export const navLinks = [
-  { label: "Work", href: "/#work" },
+  { label: "Work", href: "/projects" },
   { label: "About", href: "/#about" },
   { label: "Services", href: "/#services" }
 ];
 
 export const footerMenu = [
   { label: "Home", href: "/#top" },
-  { label: "Work", href: "/#work" },
-  { label: "Projects", href: "/projects" },
+  { label: "Work", href: "/projects" },
   { label: "Services", href: "/#services" },
   { label: "About", href: "/#about" }
 ];

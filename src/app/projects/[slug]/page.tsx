@@ -88,7 +88,13 @@ export default async function ProjectDetailPage({ params }: Props) {
       <DockNav items={navLinks} />
       <main id="main">
         <section className="relative isolate min-h-[100svh] overflow-hidden rounded-b-[48px] bg-ink text-paper">
-          <div className="absolute inset-y-0 right-0 z-[-2] w-full opacity-55 md:w-[60%] md:opacity-100">
+          <div 
+            className="absolute inset-y-0 right-0 z-[-2] w-full opacity-55 md:w-[65%] md:opacity-100"
+            style={{
+              maskImage: "linear-gradient(to right, transparent 0%, black 25%, black 100%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 25%, black 100%)"
+            }}
+          >
             <Image
               src={project.image}
               alt={project.alt}
@@ -96,12 +102,12 @@ export default async function ProjectDetailPage({ params }: Props) {
               priority
               placeholder="blur"
               blurDataURL={blurDataUrl}
-              sizes="(min-width: 768px) 60vw, 100vw"
+              sizes="(min-width: 768px) 65vw, 100vw"
               className="object-cover"
             />
           </div>
-          <div className="absolute inset-0 z-[-1] bg-[linear-gradient(90deg,rgba(14,14,16,0.98)_0%,rgba(14,14,16,0.84)_42%,rgba(14,14,16,0.18)_100%)]" />
-          <div className="absolute inset-0 z-[-1] bg-[linear-gradient(180deg,transparent_30%,rgba(14,14,16,0.55)_100%)]" />
+          <div className="absolute inset-0 z-[-1] bg-[linear-gradient(90deg,rgba(14,14,16,1)_0%,rgba(14,14,16,0.8)_20%,transparent_100%)] md:bg-[linear-gradient(90deg,rgba(14,14,16,1)_0%,rgba(14,14,16,0)_50%)]" />
+          <div className="absolute inset-0 z-[-1] bg-[linear-gradient(180deg,transparent_30%,rgba(14,14,16,0.8)_100%)]" />
 
           <div className="site-container flex min-h-[100svh] items-center pb-24 pt-28">
             <div className="max-w-4xl">

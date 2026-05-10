@@ -10,8 +10,8 @@ export default function NotFound() {
         <p className="mt-5 text-ash">
           Full case studies are intentionally light for v1. Daniel will add more after launch.
         </p>
-        <Link className="text-link mt-8" href="/#work">
-          Back to selected work
+        <Link className="text-link mt-8" href="/projects">
+          Back to projects
         </Link>
       </div>
     </main>

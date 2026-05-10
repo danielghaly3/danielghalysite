@@ -109,9 +109,16 @@ function safeImage(src: string | null | undefined, fallback: string) {
 function projectFromRecord(row: ProjectRecord): Project {
   const image = safeImage(row.thumbnail_url ?? row.cover_image_url, "/images/daniel-hero.png");
   const projectGalleryImages = row.gallery_images?.map((src) => src.trim()).filter(Boolean) ?? [];
-  const sourceGalleryImages = projectGalleryImages.length ? projectGalleryImages : [image];
+  const parsedGalleryImages = projectGalleryImages.map((entry) => {
+    const [url, ...altParts] = entry.split('|');
+    return {
+      src: safeImage(url.trim(), image),
+      alt: altParts.length ? altParts.join('|').trim() : undefined
+    };
+  });
+  const sourceGalleryImages = parsedGalleryImages.length ? parsedGalleryImages : [{ src: image, alt: undefined }];
   const galleryImages = Array.from({ length: Math.max(9, sourceGalleryImages.length) }, (_, index) => {
-    return sourceGalleryImages[index % sourceGalleryImages.length] ?? image;
+    return sourceGalleryImages[index % sourceGalleryImages.length] ?? { src: image, alt: undefined };
   });
 
   return {
@@ -206,16 +213,30 @@ function skillFromRecord(row: SkillRecord): HoverBrandLogoItem {
 }
 
 function pageSectionFromRecord(row: PageSectionRecord): PageSection {
+  const isHomeAbout = row.page === "home" && row.section_key === "about";
+  const oldTitle1 = "Designing clean digital experiences with purpose.";
+  const oldTitle2 = "About Daniel Ghaly";
+  
+  let title = row.title ?? "";
+  let ctaLabel = row.cta_label ?? "";
+  let ctaHref = row.cta_href ?? "";
+  
+  if (isHomeAbout && (title === oldTitle1 || title === oldTitle2)) {
+    title = "Daniel Ghaly";
+    ctaLabel = ctaLabel || "Visit Graphxify";
+    ctaHref = ctaHref || "https://www.graphxify.com";
+  }
+
   return {
     id: row.id,
     page: row.page,
     sectionKey: row.section_key,
     label: row.label,
     eyebrow: row.eyebrow ?? "",
-    title: row.title ?? "",
+    title,
     body: row.body ?? "",
-    ctaLabel: row.cta_label ?? "",
-    ctaHref: row.cta_href ?? "",
+    ctaLabel,
+    ctaHref,
     imageUrl: row.image_url ?? "",
     orderIndex: row.order_index,
     active: row.active,
@@ -302,10 +323,19 @@ function galleryItemFromRecord(row: GalleryItemRecord): GalleryItem {
 }
 
 function aboutFromRecord(row: AboutContentRecord): AboutContent {
+  const oldHeadline1 = "Designing clean digital experiences with purpose.";
+  const oldHeadline2 = "About Daniel Ghaly";
+  const isOldHeadline = row.headline === oldHeadline1 || row.headline === oldHeadline2;
+  const headline = isOldHeadline ? fallbackAboutContent.headline : (row.headline ?? fallbackAboutContent.headline);
+  
+  const isOldBio = row.bio && (row.bio.includes("focused on building modern brand identities") || row.bio.includes("I’m Daniel Ghaly, a graphic designer and web designer") || row.bio.includes("I'm Daniel Ghaly, a designer and web"));
+  const bioRaw = isOldBio ? null : row.bio;
+  const bio = (bioRaw ?? "").split(/\n{2,}/).map((entry) => entry.trim()).filter(Boolean);
+
   return {
-    headline: row.headline ?? fallbackAboutContent.headline,
+    headline,
     subheadline: row.subheadline ?? fallbackAboutContent.subheadline,
-    bio: (row.bio ?? "").split(/\n{2,}/).map((entry) => entry.trim()).filter(Boolean),
+    bio: bio.length ? bio : fallbackAboutContent.bio,
     image_url: safeImage(row.image_url, fallbackAboutContent.image_url),
     resume_url: row.resume_url ?? "",
     location: row.location ?? fallbackAboutContent.location,

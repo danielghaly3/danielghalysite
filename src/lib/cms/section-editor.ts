@@ -161,7 +161,7 @@ export const homeSectionSchemas: SectionEditorSchema[] = [
     sectionKey: "featured_work",
     title: "Featured Work",
     description: "Selected work heading, optional body copy, case-study button text, and featured project cards.",
-    publicAnchor: "/#work",
+    publicAnchor: "/projects",
     fields: [...sectionSystemFields, ...headerFields, { name: "cta_label", label: "Case-study button label", type: "text", source: "column" }],
     relatedResources: [
       {

@@ -121,6 +121,7 @@ export function ImageUploadField({
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const urls = mode === "list" ? splitImageUrls(value) : value.trim() ? [value.trim()] : [];
+  const previewUrls = urls.map(url => url.split('|')[0].trim());
 
   async function uploadFiles(files: FileList | null) {
     const selectedFiles = Array.from(files ?? []);
@@ -267,9 +268,9 @@ export function ImageUploadField({
         </div>
       ) : null}
 
-      {urls.length ? (
+      {previewUrls.length ? (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {urls.map((url, index) => (
+          {previewUrls.map((url, index) => (
             <div key={`${url}-${index}`} className="overflow-hidden rounded-xl border border-white/[0.08] bg-black/20">
               <img
                 src={url}
@@ -277,7 +278,7 @@ export function ImageUploadField({
                 className="aspect-video w-full bg-white/[0.03] object-cover"
                 loading="lazy"
               />
-              <p className="truncate border-t border-white/[0.06] px-3 py-2 text-xs text-white/35">{url}</p>
+              <p className="truncate border-t border-white/[0.06] px-3 py-2 text-xs text-white/35">{urls[index]}</p>
             </div>
           ))}
         </div>

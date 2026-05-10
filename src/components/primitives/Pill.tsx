@@ -36,6 +36,8 @@ function PillInner({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { isExternalLink } from "@/lib/link";
+
 export function Pill({
   children,
   href,
@@ -48,6 +50,7 @@ export function Pill({
   const classes = cn("pill", variants[variant], className);
 
   if (href) {
+    const isExternal = isExternalLink(href);
     return (
       <motion.a
         href={href}
@@ -56,6 +59,8 @@ export function Pill({
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         transition={{ type: "spring", stiffness: 360, damping: 24 }}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
       >
         <PillInner>{children}</PillInner>
       </motion.a>

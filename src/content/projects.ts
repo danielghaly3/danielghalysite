@@ -26,7 +26,7 @@ export type Project = {
   gallery?: { src: string; alt: string }[];
   stickyGallery?: {
     layout: GalleryLayout;
-    images: string[];
+    images: (string | { src: string; alt?: string })[];
   };
 };
 

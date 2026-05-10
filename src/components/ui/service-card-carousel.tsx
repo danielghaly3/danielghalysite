@@ -25,20 +25,67 @@ type ServiceCardCarouselProps = {
 const easing = [0.22, 1, 0.36, 1] as const;
 
 export function ServiceCardCarousel({ items, className }: ServiceCardCarouselProps) {
-  const [index, setIndex] = useState(0);
+  const [[page, direction], setPage] = useState([0, 0]);
   const reduceMotion = useReducedMotion();
+  
+  const len = items.length;
+  const index = ((page % len) + len) % len;
   const current = items[index];
 
   if (!current) return null;
 
-  const goTo = (next: number) => {
-    const len = items.length;
-    setIndex(((next % len) + len) % len);
+  const paginate = (newDirection: number) => {
+    setPage([page + newDirection, newDirection]);
+  };
+
+  const goTo = (newIndex: number) => {
+    const newDirection = newIndex > index ? 1 : -1;
+    if (newIndex === index) return;
+    setPage([page + (newIndex - index), newDirection]);
   };
 
   const transition = {
-    duration: reduceMotion ? 0.25 : 0.55,
-    ease: easing
+    type: "spring",
+    stiffness: 250,
+    damping: 32,
+    mass: 1,
+  };
+
+  const imageVariants = {
+    enter: (direction: number) => ({
+      x: reduceMotion ? 0 : (direction > 0 ? "100%" : "-100%"),
+      opacity: 1,
+      scale: 1,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: reduceMotion ? 0 : (direction < 0 ? "100%" : "-100%"),
+      opacity: 1,
+      scale: 1,
+    }),
+  };
+
+  const contentVariants = {
+    enter: (direction: number) => ({
+      x: reduceMotion ? 0 : (direction > 0 ? 80 : -80),
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: reduceMotion ? 0 : (direction < 0 ? 80 : -80),
+      opacity: 0,
+    }),
   };
 
   return (
@@ -46,20 +93,16 @@ export function ServiceCardCarousel({ items, className }: ServiceCardCarouselPro
       <div className="relative mx-auto max-w-[960px]">
         {/* Image card — square */}
         <div className="relative aspect-square w-full max-w-[470px] overflow-hidden rounded-[24px] border border-line bg-bone shadow-soft">
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence initial={false} custom={direction}>
             <motion.div
-              key={`image-${current.id}`}
-              className="absolute inset-0"
-              initial={{
-                opacity: 0,
-                transform: reduceMotion ? "translateX(0px) scale(1)" : "translateX(-14px) scale(1.015)"
-              }}
-              animate={{ opacity: 1, transform: "translateX(0px) scale(1)" }}
-              exit={{
-                opacity: 0,
-                transform: reduceMotion ? "translateX(0px) scale(1)" : "translateX(10px) scale(0.995)"
-              }}
+              key={`image-${page}`}
+              custom={direction}
+              variants={imageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               transition={transition}
+              className="absolute inset-0"
             >
               <Image
                 src={current.image}
@@ -77,20 +120,16 @@ export function ServiceCardCarousel({ items, className }: ServiceCardCarouselPro
         {/* Text card — overlaps the image from the right */}
         <div className="relative z-10 -mt-16 ml-auto w-[90%] max-w-[560px] lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:mt-0 lg:ml-0 lg:w-[560px]">
           <div className="relative min-h-[300px] sm:min-h-[340px] lg:min-h-[380px]">
-            <AnimatePresence mode="wait" initial={false}>
+            <AnimatePresence initial={false} custom={direction}>
               <motion.article
-                key={`content-${current.id}`}
-                className="absolute inset-0 flex flex-col rounded-[24px] bg-ink p-7 text-paper shadow-pop sm:p-9 lg:p-10"
-                initial={{
-                  opacity: 0,
-                  transform: reduceMotion ? "translateY(0px)" : "translateY(16px)"
-                }}
-                animate={{ opacity: 1, transform: "translateY(0px)" }}
-                exit={{
-                  opacity: 0,
-                  transform: reduceMotion ? "translateY(0px)" : "translateY(-10px)"
-                }}
+                key={`content-${page}`}
+                custom={direction}
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
                 transition={transition}
+                className="absolute inset-0 flex flex-col rounded-[24px] bg-ink p-7 text-paper shadow-pop sm:p-9 lg:p-10"
               >
                 <h3 className="font-display text-[clamp(28px,3.4vw,40px)] font-semibold leading-[1.05] tracking-[-0.02em]">
                   {current.title}
@@ -117,7 +156,7 @@ export function ServiceCardCarousel({ items, className }: ServiceCardCarouselPro
         <button
           type="button"
           aria-label="Previous service"
-          onClick={() => goTo(index - 1)}
+          onClick={() => paginate(-1)}
           className="grid h-12 w-12 place-items-center rounded-full bg-ink text-paper transition-[background-color,transform,color] duration-200 ease-[var(--ease-out-expo)] hover:bg-accent active:scale-95"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -133,7 +172,7 @@ export function ServiceCardCarousel({ items, className }: ServiceCardCarouselPro
                 role="tab"
                 aria-selected={isActive}
                 aria-label={`Go to service ${i + 1}, ${item.title}`}
-                onClick={() => setIndex(i)}
+                onClick={() => goTo(i)}
                 className={cn(
                   "h-2 rounded-full transition-[width,background-color] duration-300 ease-[var(--ease-out-expo)]",
                   isActive ? "w-8 bg-accent" : "w-2 bg-ink/20 hover:bg-ink/40"
@@ -146,7 +185,7 @@ export function ServiceCardCarousel({ items, className }: ServiceCardCarouselPro
         <button
           type="button"
           aria-label="Next service"
-          onClick={() => goTo(index + 1)}
+          onClick={() => paginate(1)}
           className="grid h-12 w-12 place-items-center rounded-full bg-ink text-paper transition-[background-color,transform,color] duration-200 ease-[var(--ease-out-expo)] hover:bg-accent active:scale-95"
         >
           <ArrowRight className="h-4 w-4" />

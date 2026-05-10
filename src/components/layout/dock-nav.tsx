@@ -89,6 +89,8 @@ function useActiveLabel(pathname: string, activeSection: string, items: NavLinkI
   return items[0]?.label ?? "Home";
 }
 
+import { isExternalLink } from "@/lib/link";
+
 /* ── Single dock icon ── */
 function DockIcon({
   item,
@@ -145,6 +147,16 @@ function DockIcon({
       </AnimatePresence>
     </motion.div>
   );
+
+  const isExternal = isExternalLink(item.href);
+
+  if (isExternal) {
+    return (
+      <a href={item.href} aria-label={item.label} target="_blank" rel="noopener noreferrer">
+        {inner}
+      </a>
+    );
+  }
 
   const isHashLink = item.href.includes("#") && item.href !== "/";
 

@@ -34,11 +34,12 @@ export const fallbackSiteSettings: SiteSettings = {
 };
 
 export const fallbackAboutContent: AboutContent = {
-  headline: "Designing clean digital experiences with purpose.",
+  headline: "Daniel Ghaly",
   subheadline: "Designer and Web Developer",
   bio: [
-    "I'm Daniel Ghaly, a designer and web developer focused on building modern brand identities, websites, and digital experiences that feel clean, sharp, and useful.",
-    "My work combines visual design, front end development, and AI assisted workflows to help businesses move faster without losing quality."
+    "I'm a graphic designer and web designer based in Canada, focused on creating clean brand identities, modern websites, and digital experiences that feel polished, useful, and easy to trust.",
+    "I studied Graphic Design and Advertising at Humber College and Digital Design at Sheridan College, where I built a strong foundation in branding, layout, visual systems, and digital design.",
+    "I'm also the owner of Graphxify, a creative studio where I combine design, front-end development, and AI-assisted workflows to help businesses build a stronger online presence."
   ],
   image_url: "/images/daniel-studio-portrait.png",
   resume_url: "",
@@ -130,7 +131,7 @@ export const fallbackPageSections: PageSection[] = [
     title: "Daniel Ghaly",
     body: "Designer and Web Developer. Design that works hard so brands don't have to.",
     ctaLabel: "See the work",
-    ctaHref: "#work",
+    ctaHref: "/projects",
     imageUrl: "/images/daniel-hero.png",
     orderIndex: 10,
     active: true,
@@ -168,10 +169,10 @@ export const fallbackPageSections: PageSection[] = [
     sectionKey: "about",
     label: "About",
     eyebrow: "About",
-    title: "Designing clean digital experiences with purpose.",
+    title: "Daniel Ghaly",
     body: "",
-    ctaLabel: "",
-    ctaHref: "",
+    ctaLabel: "Visit Graphxify",
+    ctaHref: "https://www.graphxify.com",
     imageUrl: "",
     orderIndex: 30,
     active: true,
@@ -249,7 +250,7 @@ export const fallbackPageSections: PageSection[] = [
     title: "Other things I've made.",
     body: "Snippets, side projects, and brand explorations.",
     ctaLabel: "Browse all Projects.",
-    ctaHref: "#work",
+    ctaHref: "/projects",
     imageUrl: "",
     orderIndex: 80,
     active: true,

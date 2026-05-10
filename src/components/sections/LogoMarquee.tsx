@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { BlurredInfiniteSlider } from "@/components/ui/infinite-slider";
 import { fallbackLogoMarqueeItems } from "@/content/cms-fallbacks";
+import { isExternalLink } from "@/lib/link";
 import type { LogoMarqueeItem, PageSection } from "@/types/cms";
 
 type LogoMarqueeProps = {
@@ -64,8 +65,8 @@ export function LogoMarquee({ section, items = fallbackLogoMarqueeItems }: LogoM
                   key={key}
                   href={logo.href}
                   data-logo-marquee-item
-                  target={logo.href.startsWith("http") ? "_blank" : undefined}
-                  rel={logo.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  target={isExternalLink(logo.href) ? "_blank" : undefined}
+                  rel={isExternalLink(logo.href) ? "noopener noreferrer" : undefined}
                   aria-label={isDuplicate ? undefined : logo.alt || logo.name}
                   aria-hidden={isDuplicate ? true : undefined}
                   tabIndex={isDuplicate ? -1 : undefined}

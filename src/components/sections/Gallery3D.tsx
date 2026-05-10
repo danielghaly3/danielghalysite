@@ -17,7 +17,8 @@ export function Gallery3D({ items = fallbackGalleryItems, section }: Gallery3DPr
     caption: item.caption
   }));
   const ctaLabel = section?.ctaLabel || "Browse all Projects.";
-  const ctaHref = section?.ctaHref || "#work";
+  const dbHref = section?.ctaHref;
+  const ctaHref = (dbHref === "/#work" || dbHref === "/work" || dbHref === "#work") ? "/projects" : (dbHref || "/projects");
 
   return (
     <section id="gallery" aria-labelledby="gallery-heading" className="section-pad overflow-hidden bg-paper">

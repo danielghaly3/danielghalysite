@@ -71,7 +71,7 @@ export const cmsResources: CmsResourceConfig[] = [
       { name: "featured", label: "Featured", type: "checkbox" },
       { name: "cover_image_url", label: "Cover image URL", type: "text" },
       { name: "thumbnail_url", label: "Thumbnail URL", type: "text" },
-      { name: "gallery_images", label: "Gallery image URLs", type: "list", help: "One URL per line." },
+      { name: "gallery_images", label: "Gallery image URLs", type: "list", help: "One URL per line. Add alt text using a pipe: https://... | Alt text" },
       { name: "live_url", label: "Live URL", type: "text" },
       { name: "github_url", label: "GitHub URL", type: "text" },
       { name: "figma_url", label: "Figma URL", type: "text" },

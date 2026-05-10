@@ -2,6 +2,7 @@
 
 import { Phone, Mail, Instagram, Linkedin } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { isExternalLink } from "@/lib/link";
 
 const contactItems = [
   {
@@ -92,12 +93,8 @@ export function Contact() {
               <motion.a
                 key={item.label}
                 href={item.href}
-                target={item.href.startsWith("http") ? "_blank" : undefined}
-                rel={
-                  item.href.startsWith("http")
-                    ? "noopener noreferrer"
-                    : undefined
-                }
+                target={isExternalLink(item.href) ? "_blank" : undefined}
+                rel={isExternalLink(item.href) ? "noopener noreferrer" : undefined}
                 className="group flex flex-col items-center gap-3"
                 initial={
                   shouldReduceMotion

@@ -1,6 +1,7 @@
 "use client";
 
 import { Eyebrow } from "@/components/primitives/Eyebrow";
+import { Pill } from "@/components/primitives/Pill";
 import { Reveal } from "@/components/primitives/Reveal";
 import { AboutImageCard } from "@/components/ui/about-image-card";
 import {
@@ -29,6 +30,8 @@ export function About({
   const imageUrl = section?.imageUrl || about.image_url;
   const imageAlt = sectionString(section, "imageAlt", `Portrait of ${settings.name}`);
   const educationLabel = sectionString(section, "educationLabel", "Education");
+  const ctaLabel = section?.ctaLabel;
+  const ctaHref = section?.ctaHref;
   const educationItems = education;
   const showEducation = educationItems.length > 0;
 
@@ -83,6 +86,16 @@ export function About({
                     </li>
                   ))}
                 </ul>
+              </div>
+            </Reveal>
+          ) : null}
+
+          {ctaLabel && ctaHref ? (
+            <Reveal delay={0.2}>
+              <div className="mt-10">
+                <Pill href={ctaHref} variant="inverse">
+                  {ctaLabel}
+                </Pill>
               </div>
             </Reveal>
           ) : null}

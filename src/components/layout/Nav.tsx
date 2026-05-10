@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { Pill } from "@/components/primitives/Pill";
 import { navLinks, site } from "@/content/site";
 import { cn } from "@/lib/cn";
+import { isExternalLink } from "@/lib/link";
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -42,15 +43,20 @@ export function Nav() {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-sm font-medium transition-colors duration-200 hover:text-accent"
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const isExternal = isExternalLink(link.href);
+            return (
+              <a
+                key={link.label}
+                href={link.href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="text-sm font-medium transition-colors duration-200 hover:text-accent"
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </div>
 
         <div className="hidden md:block">
@@ -81,16 +87,21 @@ export function Nav() {
           >
             <div className="flex h-full flex-col justify-between">
               <div className="flex flex-col gap-5">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="font-display text-[clamp(40px,12vw,72px)] font-semibold leading-none tracking-[-0.03em]"
-                    onClick={() => setOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                ))}
+                {navLinks.map((link) => {
+                  const isExternal = isExternalLink(link.href);
+                  return (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      className="font-display text-[clamp(40px,12vw,72px)] font-semibold leading-none tracking-[-0.03em]"
+                      onClick={() => setOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                  );
+                })}
               </div>
               <Pill href={`mailto:${site.email}`} variant="primary">
                 Get in touch

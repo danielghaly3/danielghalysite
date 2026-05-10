@@ -30,7 +30,8 @@ export function Hero({ about = fallbackAboutContent, section, settings = fallbac
   const image = section?.imageUrl || "/images/daniel-hero.png";
   const imageAlt = sectionString(section, "imageAlt", "Dark directional brand image for Daniel Ghaly's portfolio");
   const ctaLabel = section?.ctaLabel || "See the work";
-  const ctaHref = section?.ctaHref || "#work";
+  const dbHref = section?.ctaHref;
+  const ctaHref = (dbHref === "/#work" || dbHref === "/work" || dbHref === "#work") ? "/projects" : (dbHref || "/projects");
 
   return (
     <section
