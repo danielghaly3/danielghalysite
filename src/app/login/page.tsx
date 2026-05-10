@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { LoginForm } from "@/components/dashboard/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Admin Login",
+  title: "Daniel Ghaly",
   robots: {
     index: false,
     follow: false

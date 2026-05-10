@@ -1,6 +1,6 @@
 export const site = {
   name: "Daniel Ghaly",
-  title: "Daniel Ghaly, Designer and Builder",
+  title: "Daniel Ghaly",
   description:
     "Designer and cofounder of Graphxify. Brand identity, web design, and frontend builds for ventures that want to ship.",
   url: "https://danielghaly.com",

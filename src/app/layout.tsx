@@ -22,12 +22,12 @@ const boska = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Daniel Ghaly, Designer and Builder",
-    template: "%s | Daniel Ghaly"
+    default: "Daniel Ghaly",
+    template: "Daniel Ghaly"
   },
   description: site.description,
   openGraph: {
-    title: "Daniel Ghaly, Designer and Builder",
+    title: "Daniel Ghaly",
     description: site.description,
     url: site.url,
     siteName: "Daniel Ghaly",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Daniel Ghaly, Designer and Builder",
+    title: "Daniel Ghaly",
     description: site.description,
     images: ["/opengraph-image"]
   }

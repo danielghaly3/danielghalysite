@@ -20,20 +20,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: "Post Not Found" };
 
   return {
-    title: post.seoTitle,
+    title: "Daniel Ghaly",
     description: post.seoDescription,
     alternates: {
       canonical: `/blog/${post.slug}`
     },
     openGraph: {
-      title: post.seoTitle,
+      title: "Daniel Ghaly",
       description: post.seoDescription,
       url: `/blog/${post.slug}`,
       images: [post.ogImageUrl]
     },
     twitter: {
       card: "summary_large_image",
-      title: post.seoTitle,
+      title: "Daniel Ghaly",
       description: post.seoDescription,
       images: [post.ogImageUrl]
     }

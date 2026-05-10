@@ -3,7 +3,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { requireAdmin } from "@/lib/auth/admin";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Daniel Ghaly",
   robots: {
     index: false,
     follow: false

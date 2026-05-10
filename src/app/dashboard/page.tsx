@@ -65,7 +65,6 @@ async function getRecentlyUpdated(): Promise<RecentRow[]> {
   const supabase = createClient(await cookies());
   const sources = [
     { table: "projects", select: "id,title,updated_at", labelField: "title", kind: "Project", route: (row: Record<string, unknown>) => `/dashboard/projects/${row.id}` },
-    { table: "blog_posts", select: "id,title,updated_at", labelField: "title", kind: "Blog post", route: (row: Record<string, unknown>) => `/dashboard/blog_posts/${row.id}` },
     { table: "page_sections", select: "id,label,page,section_key,updated_at", labelField: "label", kind: "Section", route: (row: Record<string, unknown>) => `/dashboard/pages/${row.page}/${row.section_key}` },
     { table: "services", select: "id,title,updated_at", labelField: "title", kind: "Service", route: (row: Record<string, unknown>) => `/dashboard/services/${row.id}` },
     { table: "skills", select: "id,name,updated_at", labelField: "name", kind: "Skill", route: (row: Record<string, unknown>) => `/dashboard/skills/${row.id}` },
@@ -248,7 +247,6 @@ export default async function DashboardPage() {
   const [
     settings,
     projects,
-    blog,
     services,
     skills,
     faqs,
@@ -263,7 +261,6 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     getSiteSettings(),
     getMetric("projects", { statusField: "status", statusValue: "published" }),
-    getMetric("blog_posts", { activeField: "published", activeValue: true }),
     getMetric("services", { activeField: "active", activeValue: true }),
     getMetric("skills", { activeField: "active", activeValue: true }),
     getMetric("faq_items", { activeField: "active", activeValue: true }),
@@ -280,7 +277,6 @@ export default async function DashboardPage() {
   const quickActions = [
     { label: "Edit homepage", href: "/dashboard/pages/home", Icon: Layers },
     { label: "New project", href: "/dashboard/projects/new", Icon: Plus },
-    { label: "New blog post", href: "/dashboard/blog_posts/new", Icon: Plus },
     { label: "Edit global settings", href: "/dashboard/settings", Icon: Settings },
     { label: "View public site", href: "/", Icon: ExternalLink, external: true }
   ];
@@ -397,7 +393,6 @@ export default async function DashboardPage() {
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <MetricCard label="Projects" href="/dashboard/projects" total={projects.total} published={projects.published} publishedLabel="published" Icon={Briefcase} delay={0} />
-          <MetricCard label="Blog Posts" href="/dashboard/blog_posts" total={blog.total} published={blog.published} publishedLabel="published" Icon={FileText} delay={40} />
           <MetricCard label="Services" href="/dashboard/services" total={services.total} published={services.published} Icon={Sparkles} delay={80} />
           <MetricCard label="Skills" href="/dashboard/skills" total={skills.total} published={skills.published} Icon={Wrench} delay={120} />
           <MetricCard label="FAQ" href="/dashboard/faq_items" total={faqs.total} published={faqs.published} Icon={HelpCircle} delay={160} />

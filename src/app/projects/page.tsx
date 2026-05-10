@@ -12,16 +12,16 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const section = await getPageSection("projects", "hero");
-  const title = section?.title || "Projects";
+  const title = "Daniel Ghaly";
   const description =
     section?.body ||
     "A collection of brand, web, and digital projects built with a focus on clean design, strong user experience, and polished execution.";
-  const seoTitle = sectionString(section, "seoTitle", title);
+  const seoTitle = "Daniel Ghaly";
   const seoDescription = sectionString(section, "seoDescription", description);
-  const ogTitle = sectionString(section, "ogTitle", seoTitle);
+  const ogTitle = "Daniel Ghaly";
   const ogDescription = sectionString(section, "ogDescription", seoDescription);
   const ogImage = sectionString(section, "ogImage", section?.imageUrl || "");
-  const twitterTitle = sectionString(section, "twitterTitle", ogTitle);
+  const twitterTitle = "Daniel Ghaly";
   const twitterDescription = sectionString(section, "twitterDescription", ogDescription);
   const twitterImage = sectionString(section, "twitterImage", ogImage);
   const canonicalUrl = sectionString(section, "canonicalUrl", "/projects");

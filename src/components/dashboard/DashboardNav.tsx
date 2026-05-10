@@ -46,7 +46,7 @@ const navGroups: NavGroup[] = [
       { label: "About Page", href: "/dashboard/pages/home/about", icon: User },
       { label: "Projects Page", href: "/dashboard/pages/projects", icon: Briefcase, matchPrefix: "exact" },
       { label: "Project Template", href: "/dashboard/pages/projects/detail", icon: Layers },
-      { label: "Blog Page", href: "/dashboard/pages/blog", icon: BookOpen },
+
       { label: "Contact / Footer", href: "/dashboard/settings/footer", icon: MessageSquareText }
     ]
   },
@@ -54,7 +54,7 @@ const navGroups: NavGroup[] = [
     label: "Content Library",
     items: [
       { label: "Projects", href: "/dashboard/projects", icon: Briefcase },
-      { label: "Blog Posts", href: "/dashboard/blog_posts", icon: FileText },
+
       { label: "Services", href: "/dashboard/services", icon: Sparkles },
       { label: "Skills / Tools", href: "/dashboard/skills", icon: Wrench },
       { label: "Logo Marquee", href: "/dashboard/logo_marquee_items", icon: Layers },

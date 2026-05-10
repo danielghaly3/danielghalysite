@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [project, settings] = await Promise.all([getProjectBySlug(slug), getSiteSettings()]);
   if (!project) return { title: "Project Not Found" };
 
-  const title = project.seoTitle ?? project.name;
+  const title = "Daniel Ghaly";
   const description = project.seoDescription ?? project.description;
   const image = project.ogImageUrl ?? project.image ?? settings.default_og_image;
 

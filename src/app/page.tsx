@@ -33,12 +33,12 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const [settings, heroSection] = await Promise.all([getSiteSettings(), getPageSection("home", "hero")]);
-  const title = sectionString(heroSection, "seoTitle", settings.seo_default_title);
+  const title = "Daniel Ghaly";
   const description = sectionString(heroSection, "seoDescription", settings.seo_default_description);
-  const ogTitle = sectionString(heroSection, "ogTitle", title);
+  const ogTitle = "Daniel Ghaly";
   const ogDescription = sectionString(heroSection, "ogDescription", description);
   const ogImage = sectionString(heroSection, "ogImage", settings.default_og_image);
-  const twitterTitle = sectionString(heroSection, "twitterTitle", ogTitle);
+  const twitterTitle = "Daniel Ghaly";
   const twitterDescription = sectionString(heroSection, "twitterDescription", ogDescription);
   const twitterImage = sectionString(heroSection, "twitterImage", ogImage);
   const canonicalUrl = sectionString(heroSection, "canonicalUrl", "/");
