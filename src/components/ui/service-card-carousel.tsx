@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, type MotionProps } from "motion/react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { blurDataUrl } from "@/content/work";
@@ -22,7 +22,7 @@ type ServiceCardCarouselProps = {
   className?: string;
 };
 
-const easing = [0.22, 1, 0.36, 1] as const;
+type MotionTransition = NonNullable<MotionProps["transition"]>;
 
 export function ServiceCardCarousel({ items, className }: ServiceCardCarouselProps) {
   const [[page, direction], setPage] = useState([0, 0]);
@@ -44,7 +44,7 @@ export function ServiceCardCarousel({ items, className }: ServiceCardCarouselPro
     setPage([page + (newIndex - index), newDirection]);
   };
 
-  const transition = {
+  const transition: MotionTransition = {
     type: "spring",
     stiffness: 250,
     damping: 32,

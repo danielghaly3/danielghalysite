@@ -143,7 +143,10 @@ function projectFromRecord(row: ProjectRecord): Project {
     seoTitle: row.seo_title ?? undefined,
     seoDescription: row.seo_description ?? undefined,
     ogImageUrl: row.og_image_url ?? undefined,
-    gallery: galleryImages.map((src, index) => ({ src, alt: `${row.title} gallery image ${index + 1}` })),
+    gallery: galleryImages.map((image, index) => ({
+      src: image.src,
+      alt: image.alt ?? `${row.title} gallery image ${index + 1}`
+    })),
     stickyGallery: {
       layout: readProcessLayout(row.process),
       images: galleryImages
